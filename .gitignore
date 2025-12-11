@@ -11,7 +11,6 @@ __pycache__/
 dist/
 build/
 *.log
-app/database.py
 
 # ─────────────────────────────
 # Entornos Virtuales
