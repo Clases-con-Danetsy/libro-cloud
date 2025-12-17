@@ -1,4 +1,5 @@
-from sqlalchemy import Column, Integer, String
+from sqlalchemy import Column, Integer, String, ForeignKey, DateTime
+from datetime import datetime
 from app.database import Base
 
 class Usuario(Base):
@@ -7,5 +8,7 @@ class Usuario(Base):
     id = Column(Integer, primary_key=True, index=True)
     username = Column(String(50), unique=True, nullable=False)
     password = Column(String(255), nullable=False)
-    rol = Column(String(20), default="user")
+    rol = Column(Integer, ForeignKey("roles.id"), default=1)
     status = Column (Integer, nullable = False, default=1)
+    created_at = Column(DateTime, nullable=False, default=datetime.now())
+    updated_at = Column(DateTime, nullable=False, default=datetime.now())
