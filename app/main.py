@@ -1,8 +1,8 @@
 from ntpath import join
-from fastapi import FastAPI, Depends
+from fastapi import FastAPI, Depends, Query
 from sqlalchemy.orm import Session
 from app.database import SessionLocal, engine, Base, get_db
-from app.crud import crear_rol_inicial, crear_usuario_inicial, obtener_usuarios, obtener_roles
+from app.crud import crear_rol_inicial, crear_usuario_inicial, obtener_usuarios, obtener_roles, crear_rol, crear_usuario
 
 app = FastAPI(title="Libro Cloud API")
 
@@ -21,8 +21,7 @@ def startup_event():
 @app.get("/")
 def read_root():
     return {"message": "API funcionando"}
-
-@app.get("/usuarios")
+@app.get("/usuarios", tags=["Usuarios"])
 def listar_usuarios(db: Session = Depends(get_db)):
     usuarios = obtener_usuarios(db)
     roles = obtener_roles(db)
@@ -41,8 +40,12 @@ def listar_usuarios(db: Session = Depends(get_db)):
         }
         for u in usuarios
     ]
+@app.post("/crear_usuario", tags=["Usuarios"])
+def endpoint_crear_usuario(db: Session = Depends(get_db), username: str = Query(...), password: str = Query(...), rol: int = Query(...)):
+    crear_usuario(db, username=username, password=password, rol=rol)
+    return "Usuario creado exitosamente"
 
-@app.get("/roles")
+@app.get("/roles", tags=["Roles"])
 def listar_roles(db: Session = Depends(get_db)):
     roles = obtener_roles(db)
     # return [
@@ -56,3 +59,8 @@ def listar_roles(db: Session = Depends(get_db)):
     #     for r in roles
     # ]
     return roles
+@app.post("/crear_rol", tags=["Roles"])
+def endpoint_crear_rol(db: Session = Depends(get_db), rol_name: str = Query(...)):
+    crear_rol(db, rol_name)
+
+    return "Rol creado exitosamente"
