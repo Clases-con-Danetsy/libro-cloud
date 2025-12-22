@@ -22,3 +22,14 @@ def crear_usuario_inicial(db: Session):
     )
     db.add(nuevo)
     db.commit()
+
+def create_usuario(db: Session, username: str, password: str, role_id: int):
+    hashed_password = generate_password_hash(password)
+    nuevo_usuario = Usuario(username=username, password=hashed_password, role_id=role_id)
+    db.add(nuevo_usuario)
+    db.commit()
+    db.refresh(nuevo_usuario)
+    return nuevo_usuario
+
+def get_usuario_by_username(db: Session, username: str):
+    return db.query(Usuario).filter(Usuario.username == username).first()

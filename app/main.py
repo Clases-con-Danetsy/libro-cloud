@@ -1,8 +1,9 @@
-from fastapi import FastAPI, Depends
+from fastapi import FastAPI, Depends, Body, HTTPException
 from sqlalchemy.orm import Session
 from app.database import Base, engine, SessionLocal, get_db
-from app.crud import crear_usuario_inicial
+from app.crud.usuario import crear_usuario_inicial, create_usuario, get_usuario_by_username
 from app.models import Usuario, Rol   # importa modelos explícitamente o todos con *
+from app.crud.rol import get_roles, create_role, get_role_by_name
 
 app = FastAPI()
 
@@ -13,14 +14,6 @@ def startup_event():
 
     db = SessionLocal()
 
-    # Verificar existencia de rol admin
-    rol_admin = db.query(Rol).filter(Rol.nombre == "admin").first()
-    if not rol_admin:
-        print("🔧 Creando rol 'admin'...")
-        nuevo_rol = Rol(nombre="admin")
-        db.add(nuevo_rol)
-        db.commit()
-
     crear_usuario_inicial(db)
     db.close()
 
@@ -30,9 +23,33 @@ def startup_event():
 def index():
     return {"status": "Backend Libro Cloud listo"}
 
+@app.post("/roles")
+def create_new_role(role_name: str = Body(..., embed=True), db: Session = Depends(get_db)):
+    db_role = get_role_by_name(db, nombre=role_name)
+    if db_role:
+        raise HTTPException(status_code=400, detail="Role already exists")
+    return create_role(db=db, nombre=role_name)
+
 @app.get("/roles")
 def read_roles(db: Session = Depends(get_db)):
-    return db.query(Rol).all()
+    return get_roles(db)
+
+@app.post("/usuarios")
+def create_new_user(
+    username: str = Body(...),
+    password: str = Body(...),
+    role_id: int = Body(...),
+    db: Session = Depends(get_db)
+):
+    role = db.query(Rol).filter(Rol.id == role_id).first()
+    if not role:
+        raise HTTPException(status_code=400, detail="Role not found")
+        
+    existing_user = get_usuario_by_username(db, username=username)
+    if existing_user:
+        raise HTTPException(status_code=400, detail="Username already registered")
+        
+    return create_usuario(db=db, username=username, password=password, role_id=role_id)
 
 @app.get("/usuarios")
 def read_users(db: Session = Depends(get_db)):
