@@ -28,6 +28,30 @@ def crear_rol(db: Session, rol_name: str):
     )
     db.add(nuevo)
     db.commit()
-
+    return "Rol creado correctamente"
+def update_rol(db: Session,old_rol_name: str, new_rol_name: str):
+    rol = db.query(Roles).filter(Roles.rol_name == old_rol_name).first()
+    if rol:
+        rol.rol_name = new_rol_name
+        rol.updated_at = datetime.now()
+        db.add(rol)
+        db.commit()
+    return "Rol actualizado correctamente"
+def delete_rol(db: Session, rol_name: str):
+    rol = db.query(Roles).filter(Roles.rol_name == rol_name).first()
+    if rol:
+        rol.status = 0
+        rol.updated_at = datetime.now()
+        db.add(rol)
+        db.commit()
+    return "Rol eliminado correctamente"
+def activate_rol(db: Session, rol_name: str):
+    rol = db.query(Roles).filter(Roles.rol_name == rol_name).first()
+    if rol:
+        rol.status = 1
+        rol.updated_at = datetime.now()
+        db.add(rol)
+        db.commit()
+    return "Rol activado correctamente"
 def obtener_roles(db: Session):
     return db.query(Roles).all()
