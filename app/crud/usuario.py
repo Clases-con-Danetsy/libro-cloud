@@ -46,6 +46,11 @@ def obtener_usuario(db: Session, username: str):
 def update_usuario(db: Session, old_username: str, new_username: str, new_rol: int):
     usuario = db.query(Usuario).filter(Usuario.username == old_username).first()
     if usuario:
+        rol_obj = db.query(Roles).filter(Roles.id == new_rol).first()
+        if not rol_obj:
+            return "El rol no existe"
+        if rol_obj.status != 1:
+            return "El rol existe pero está inactivo"
         usuario.username = new_username
         usuario.updated_at = datetime.now()
         usuario.rol = new_rol
