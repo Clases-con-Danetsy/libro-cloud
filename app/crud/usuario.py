@@ -24,6 +24,13 @@ def crear_usuario_inicial(db: Session):
     db.commit()
 
 def create_usuario(db: Session, username: str, password: str, role_id: int):
+    # Validar rol
+    rol = db.query(Rol).filter(Rol.id == role_id).first()
+    if not rol:
+        raise ValueError("El rol especificado no existe.")
+    if not rol.is_active:
+        raise ValueError("El rol especificado no está activo.")
+
     hashed_password = generate_password_hash(password)
     nuevo_usuario = Usuario(username=username, password=hashed_password, role_id=role_id)
     db.add(nuevo_usuario)
@@ -33,3 +40,44 @@ def create_usuario(db: Session, username: str, password: str, role_id: int):
 
 def get_usuario_by_username(db: Session, username: str):
     return db.query(Usuario).filter(Usuario.username == username).first()
+
+def update_usuario(db: Session, user_id: int, username: str = None, role_id: int = None, is_active: bool = None):
+    usuario_db = db.query(Usuario).filter(Usuario.id == user_id).first()
+    if not usuario_db:
+        return None
+
+    if role_id is not None:
+        rol = db.query(Rol).filter(Rol.id == role_id).first()
+        if not rol:
+            raise ValueError("El rol especificado no existe.")
+        if not rol.is_active:
+            raise ValueError("El rol especificado no está activo.")
+        usuario_db.role_id = role_id
+
+    if username is not None:
+        usuario_db.username = username
+    
+    if is_active is not None:
+        usuario_db.is_active = is_active
+
+    db.commit()
+    db.refresh(usuario_db)
+    return usuario_db
+
+def delete_usuario(db: Session, user_id: int):
+    usuario_db = db.query(Usuario).filter(Usuario.id == user_id).first()
+    if not usuario_db:
+        return None
+    usuario_db.is_active = False
+    db.commit()
+    db.refresh(usuario_db)
+    return usuario_db
+
+def activate_usuario(db: Session, user_id: int):
+    usuario_db = db.query(Usuario).filter(Usuario.id == user_id).first()
+    if not usuario_db:
+        return None
+    usuario_db.is_active = True
+    db.commit()
+    db.refresh(usuario_db)
+    return usuario_db
