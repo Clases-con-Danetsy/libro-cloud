@@ -1,6 +1,6 @@
 from sqlalchemy.orm import Session
 from datetime import datetime
-from werkzeug.security import generate_password_hash
+from werkzeug.security import generate_password_hash, check_password_hash
 from app.models import Usuario, Roles
 
 def crear_usuario_inicial(db: Session):
@@ -73,3 +73,30 @@ def activate_usuario(db: Session, username: str):
         db.add(usuario)
         db.commit()
     return "Usuario activado correctamente"
+
+def verificar_credenciales(db: Session, username: str, password: str):
+    """
+    Verifica si las credenciales del usuario son correctas
+    Retorna una tupla (usuario, mensaje_error)
+    - Si es exitoso: (usuario_obj, None)
+    - Si falla: (None, "mensaje de error")
+    """
+    # Buscar usuario por username (sin filtrar por status todavía)
+    usuario = db.query(Usuario).filter(
+        Usuario.username == username
+    ).first()
+
+    # Verificar si el usuario existe
+    if not usuario:
+        return None, "Usuario no encontrado"
+    
+    # Verificar si el usuario está activo
+    if usuario.status == 0:
+        return None, "Usuario inactivo"
+    
+    # Verificar la contraseña
+    if not check_password_hash(usuario.password, password):
+        return None, "Contraseña incorrecta"
+    
+    # Todo correcto
+    return usuario, None
