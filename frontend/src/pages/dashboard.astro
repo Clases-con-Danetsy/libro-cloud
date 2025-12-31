@@ -1,0 +1,73 @@
+---
+import Layout from "../layouts/layout.astro";
+---
+
+<Layout title="Dashboard">
+  <div class="min-h-screen bg-gray-100">
+    <nav class="bg-white shadow-sm">
+      <div
+        class="container mx-auto px-4 py-4 flex justify-between items-center"
+      >
+        <h1 class="text-xl font-bold text-gray-800">Libro Cloud</h1>
+        <div class="flex items-center gap-4">
+          <span id="userInfo" class="text-gray-600"></span>
+          <button
+            id="logoutBtn"
+            class="bg-red-600 text-white px-4 py-2 rounded-md hover:bg-red-700 transition-colors text-sm"
+          >
+            Cerrar Sesión
+          </button>
+        </div>
+      </div>
+    </nav>
+
+    <div class="container mx-auto p-8">
+      <div class="bg-white rounded-lg shadow-md p-6">
+        <h2 class="text-3xl font-bold mb-4 text-gray-800">
+          Bienvenido al Dashboard
+        </h2>
+        <div id="welcomeMessage" class="text-gray-600 mb-4"></div>
+        <p class="text-gray-500">Has iniciado sesión correctamente.</p>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Verificar autenticación al cargar la página
+    const isLoggedIn = localStorage.getItem("isLoggedIn");
+    const userStr = localStorage.getItem("user");
+
+    if (!isLoggedIn || !userStr) {
+      window.location.href = "/";
+    } else {
+      try {
+        const user = JSON.parse(userStr);
+
+        // Mostrar información del usuario
+        const userInfo = document.getElementById("userInfo");
+        const welcomeMessage = document.getElementById("welcomeMessage");
+
+        if (userInfo) {
+          userInfo.textContent = `${user.username} (${user.rol})`;
+        }
+
+        if (welcomeMessage) {
+          welcomeMessage.innerHTML = `
+            <p class="text-lg"><strong>Usuario:</strong> ${user.username}</p>
+            <p class="text-lg"><strong>Rol:</strong> ${user.rol}</p>
+          `;
+        }
+      } catch (error) {
+        console.error("Error al parsear usuario:", error);
+        window.location.href = "/";
+      }
+    }
+
+    // Cerrar sesión
+    document.getElementById("logoutBtn")?.addEventListener("click", () => {
+      localStorage.removeItem("user");
+      localStorage.removeItem("isLoggedIn");
+      window.location.href = "/";
+    });
+  </script>
+</Layout>
