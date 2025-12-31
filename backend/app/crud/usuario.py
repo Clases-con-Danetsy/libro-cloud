@@ -3,21 +3,24 @@ from datetime import datetime
 from werkzeug.security import generate_password_hash, check_password_hash
 from app.models import Usuario, Roles
 
+
 def crear_usuario_inicial(db: Session):
     existe = db.query(Usuario).filter(Usuario.username == "test").first()
     if existe:
         return
-    
+
     nuevo = Usuario(
         username="test",
         password=generate_password_hash("123"),
         rol=1,
         status=1,
         created_at=datetime.now(),
-        updated_at=datetime.now()
+        updated_at=datetime.now(),
     )
     db.add(nuevo)
     db.commit()
+
+
 def crear_usuario(db: Session, username: str, password: str, rol: int):
     existe = db.query(Usuario).filter(Usuario.username == username).first()
     if existe:
@@ -27,22 +30,28 @@ def crear_usuario(db: Session, username: str, password: str, rol: int):
         return "El rol no existe"
     if rol_obj.status != 1:
         return "El rol existe pero está inactivo"
-    
+
     nuevo = Usuario(
         username=username,
         password=generate_password_hash(password),
         rol=rol,
         status=1,
         created_at=datetime.now(),
-        updated_at=datetime.now()
-    ) 
+        updated_at=datetime.now(),
+    )
     db.add(nuevo)
     db.commit()
     return "Usuario creado correctamente"
+
+
 def obtener_usuarios(db: Session):
     return db.query(Usuario).all()
+
+
 def obtener_usuario(db: Session, username: str):
     return db.query(Usuario).filter(Usuario.username == username).first()
+
+
 def update_usuario(db: Session, old_username: str, new_username: str, new_rol: int):
     usuario = db.query(Usuario).filter(Usuario.username == old_username).first()
     if usuario:
@@ -57,6 +66,8 @@ def update_usuario(db: Session, old_username: str, new_username: str, new_rol: i
         db.add(usuario)
         db.commit()
     return "Usuario actualizado correctamente"
+
+
 def delete_usuario(db: Session, username: str):
     usuario = db.query(Usuario).filter(Usuario.username == username).first()
     if usuario:
@@ -65,6 +76,8 @@ def delete_usuario(db: Session, username: str):
         db.add(usuario)
         db.commit()
     return "Usuario eliminado correctamente"
+
+
 def activate_usuario(db: Session, username: str):
     usuario = db.query(Usuario).filter(Usuario.username == username).first()
     if usuario:
@@ -74,29 +87,16 @@ def activate_usuario(db: Session, username: str):
         db.commit()
     return "Usuario activado correctamente"
 
-def verificar_credenciales(db: Session, username: str, password: str):
-    """
-    Verifica si las credenciales del usuario son correctas
-    Retorna una tupla (usuario, mensaje_error)
-    - Si es exitoso: (usuario_obj, None)
-    - Si falla: (None, "mensaje de error")
-    """
-    # Buscar usuario por username (sin filtrar por status todavía)
-    usuario = db.query(Usuario).filter(
-        Usuario.username == username
-    ).first()
 
-    # Verificar si el usuario existe
+def verificar_credenciales(db: Session, username: str, password: str):
+    usuario = db.query(Usuario).filter(Usuario.username == username).first()
     if not usuario:
         return None, "Usuario no encontrado"
-    
-    # Verificar si el usuario está activo
+
     if usuario.status == 0:
         return None, "Usuario inactivo"
-    
-    # Verificar la contraseña
+
     if not check_password_hash(usuario.password, password):
         return None, "Contraseña incorrecta"
-    
-    # Todo correcto
+
     return usuario, None
