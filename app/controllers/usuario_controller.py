@@ -71,7 +71,7 @@ def activate_user_endpoint(user_id: int, db: Session = Depends(get_db)):
         raise HTTPException(status_code=404, detail="Usuario no encontrado")
     return {"message": "User activated successfully", "id": activated_user.id}
 
-@router.post("/login", tags=["Usuarios"])
+@router.post("/login")
 def login(username: str = Body(...), password: str = Body(...), db: Session = Depends(get_db)):
     try:
         user = login_usuario(db, username, password)
