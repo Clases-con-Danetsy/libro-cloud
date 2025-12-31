@@ -1,5 +1,5 @@
 from sqlalchemy.orm import Session
-from werkzeug.security import generate_password_hash
+from werkzeug.security import generate_password_hash, check_password_hash
 from app.models import Usuario, Rol
 
 def crear_usuario_inicial(db: Session):
@@ -81,3 +81,16 @@ def activate_usuario(db: Session, user_id: int):
     db.commit()
     db.refresh(usuario_db)
     return usuario_db
+
+def login_usuario(db: Session, username: str, password: str):
+    usuario = get_usuario_by_username(db, username)
+    if not usuario:
+        raise ValueError("Usuario no encontrado")
+    
+    if not check_password_hash(usuario.password, password):
+        raise ValueError("Contraseña incorrecta")
+    
+    if not usuario.is_active:
+        raise ValueError("Usuario no está activo")
+        
+    return usuario
