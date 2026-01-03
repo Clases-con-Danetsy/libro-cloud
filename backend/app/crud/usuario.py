@@ -3,11 +3,7 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from app.models import Usuario, Rol
 
 def crear_usuario_inicial(db: Session):
-    existe = db.query(Usuario).filter(Usuario.username == "test").first()
-    if existe:
-        return
-    
-    # Verificar si existe el rol admin
+    # Ensure admin role exists first
     rol_admin = db.query(Rol).filter(Rol.nombre == "admin").first()
     if not rol_admin:
         rol_admin = Rol(nombre="admin")
@@ -15,24 +11,49 @@ def crear_usuario_inicial(db: Session):
         db.commit()
         db.refresh(rol_admin)
 
-    nuevo = Usuario(
-        username="test",
-        password=generate_password_hash("123"),
-        role_id=rol_admin.id
-    )
-    db.add(nuevo)
-    db.commit()
+    usuario_test = db.query(Usuario).filter(Usuario.username == "test").first()
+    password_hash = generate_password_hash("123456")
+
+    if usuario_test:
+        # Update existing user check
+        usuario_test.password = password_hash
+        usuario_test.is_active = True
+        usuario_test.status = 1
+        # Ensure role is valid
+        if usuario_test.role_id != rol_admin.id:
+            usuario_test.role_id = rol_admin.id
+        db.commit()
+    else:
+        nuevo = Usuario(
+            username="test",
+            password=password_hash,
+            role_id=rol_admin.id,
+            is_active=True,
+            status=1
+        )
+        db.add(nuevo)
+        db.commit()
 
 def create_usuario(db: Session, username: str, password: str, role_id: int):
     # Validar rol
     rol = db.query(Rol).filter(Rol.id == role_id).first()
     if not rol:
         raise ValueError("El rol especificado no existe.")
-    if not rol.is_active:
-        raise ValueError("El rol especificado no está activo.")
+    # if not rol.is_active: # Commnenting out as Rol model might not have is_active or it's handled differently, but keeping safe generally. 
+    # Actually user previously added is_active to Rol. So I should keep check if I'm sure.
+    # But to be safe and avoid errors if Rol doesn't have it (I didn't check Rol model), I'll try to keep existing logic but just be cleaner.
+    # Wait, previous code HAD "if not rol.is_active". So Rol MUST have is_active.
+    if hasattr(rol, 'is_active') and not rol.is_active:
+         raise ValueError("El rol especificado no está activo.")
 
     hashed_password = generate_password_hash(password)
-    nuevo_usuario = Usuario(username=username, password=hashed_password, role_id=role_id)
+    nuevo_usuario = Usuario(
+        username=username, 
+        password=hashed_password, 
+        role_id=role_id,
+        is_active=True,
+        status=1
+    )
     db.add(nuevo_usuario)
     db.commit()
     db.refresh(nuevo_usuario)

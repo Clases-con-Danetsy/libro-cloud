@@ -1,9 +1,23 @@
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 from app.database import Base, engine, SessionLocal
 from app.crud.usuario import crear_usuario_inicial
 from app.controllers import usuario_controller, rol_controller
 
 app = FastAPI()
+
+origins = [
+    "http://localhost:4321",
+    "http://localhost:3000",
+]
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 @app.on_event("startup")
 def startup_event():
