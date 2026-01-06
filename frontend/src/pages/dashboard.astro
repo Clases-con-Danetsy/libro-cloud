@@ -6,5 +6,24 @@ import MainLayout from "../layouts/MainLayout.astro";
   <div class="max-w-4xl mx-auto">
     <h1 class="text-3xl font-bold text-gray-800">Dashboard</h1>
     <p class="mt-4 text-gray-600">Bienvenido al panel de control.</p>
+    <h2 id="username"></h2>
+    <h2 id="rol"></h2>
+    <button onclick="signOut()">sign out</button>
   </div>
 </MainLayout>
+<script is:inline>
+  const signOut = () => {
+    localStorage.removeItem("isLoggedIn");
+    localStorage.removeItem("user");
+    window.location.href = "/";
+  };
+  const isLoggedIn = localStorage.getItem("isLoggedIn");
+  const user = JSON.parse(localStorage.getItem("user"));
+  if (!isLoggedIn || !user) {
+    window.location.href = "/";
+  }
+  const username = document.getElementById("username");
+  const rol = document.getElementById("rol");
+  username.textContent = user.username;
+  rol.textContent = user.rol_name;
+</script>

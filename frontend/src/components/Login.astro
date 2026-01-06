@@ -1,35 +1,44 @@
 ---
+
 ---
+
 <div class="max-w-md mx-auto mt-10 p-6 bg-white rounded-lg shadow-md">
-  <h2 class="text-2xl font-bold mb-6 text-center text-gray-800">Iniciar Sesión</h2>
-  
+  <h2 class="text-2xl font-bold mb-6 text-center text-gray-800">
+    Iniciar Sesión
+  </h2>
+
   <form id="login-form" class="space-y-4">
     <div>
-      <label for="username" class="block text-sm font-medium text-gray-700">Usuario</label>
-      <input 
-        type="text" 
-        id="username" 
-        name="username" 
-        required 
+      <label for="username" class="block text-sm font-medium text-gray-700"
+        >Usuario</label
+      >
+      <input
+        type="text"
+        id="username"
+        name="username"
+        required
         class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
       />
     </div>
-    
+
     <div>
-      <label for="password" class="block text-sm font-medium text-gray-700">Contraseña</label>
-      <input 
-        type="password" 
-        id="password" 
-        name="password" 
-        required 
+      <label for="password" class="block text-sm font-medium text-gray-700"
+        >Contraseña</label
+      >
+      <input
+        type="password"
+        id="password"
+        name="password"
+        required
         class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
       />
     </div>
 
-    <div id="error-message" class="hidden text-red-500 text-sm text-center"></div>
+    <div id="error-message" class="hidden text-red-500 text-sm text-center">
+    </div>
 
-    <button 
-      type="submit" 
+    <button
+      type="submit"
       class="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
     >
       Ingresar
@@ -38,54 +47,59 @@
 </div>
 
 <script>
-  const form = document.getElementById('login-form');
-  const errorMessage = document.getElementById('error-message');
+  const form = document.getElementById("login-form");
+  const errorMessage = document.getElementById("error-message");
 
   if (form) {
-    form.addEventListener('submit', async (e) => {
+    form.addEventListener("submit", async (e) => {
       e.preventDefault();
-      
+
       const formData = new FormData(form);
       const data = Object.fromEntries(formData);
-      
+
       // Reset error
       if (errorMessage) {
-        errorMessage.classList.add('hidden');
-        errorMessage.textContent = '';
+        errorMessage.classList.add("hidden");
+        errorMessage.textContent = "";
       }
 
       try {
-        const response = await fetch('http://127.0.0.1:8000/login', {
-          method: 'POST',
+        const response = await fetch("http://127.0.0.1:8000/login", {
+          method: "POST",
           headers: {
-            'Content-Type': 'application/json',
+            "Content-Type": "application/json",
           },
           body: JSON.stringify(data),
         });
 
         if (response.ok) {
-          window.location.href = '/dashboard';
+          const data = await response.json();
+          const isLoggedIn = true;
+          localStorage.setItem("user", JSON.stringify(data.user));
+          localStorage.setItem("isLoggedIn", String(isLoggedIn));
+          window.location.href = "/dashboard";
         } else {
           try {
             const result = await response.json();
             // Handle cases where result is just a string or an object with detail
             const msg = result.detail || JSON.stringify(result);
-             if (errorMessage) {
-                errorMessage.textContent = msg;
-                errorMessage.classList.remove('hidden');
-             }
+            if (errorMessage) {
+              errorMessage.textContent = msg;
+              errorMessage.classList.remove("hidden");
+            }
           } catch (jsonError) {
-             if (errorMessage) {
-                errorMessage.textContent = 'Error al procesar la respuesta';
-                errorMessage.classList.remove('hidden');
-             }
+            if (errorMessage) {
+              errorMessage.textContent = "Error al procesar la respuesta";
+              errorMessage.classList.remove("hidden");
+            }
           }
         }
       } catch (error) {
-        console.error('Error:', error);
+        console.error("Error:", error);
         if (errorMessage) {
-          errorMessage.textContent = 'Error de conexión con el servidor backend (http://127.0.0.1:8000)';
-          errorMessage.classList.remove('hidden');
+          errorMessage.textContent =
+            "Error de conexión con el servidor backend (http://127.0.0.1:8000)";
+          errorMessage.classList.remove("hidden");
         }
       }
     });
