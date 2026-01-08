@@ -86,7 +86,11 @@
 
         if (response.ok) {
           // Session logic restored - keeping it simple as requested
+          const responseData = await response.json();
           localStorage.setItem('isLoggedIn', 'true');
+          if (responseData.user && responseData.user.rol_id) {
+             localStorage.setItem('rol_id', responseData.user.rol_id);
+          }
           window.location.replace('/dashboard');
         } else {
           try {

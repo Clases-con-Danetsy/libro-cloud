@@ -20,23 +20,23 @@ def crear_usuario_inicial(db: Session):
         usuario_test.is_active = True
         usuario_test.status = 1
         # Ensure role is valid
-        if usuario_test.role_id != rol_admin.id:
-            usuario_test.role_id = rol_admin.id
+        if usuario_test.rol_id != rol_admin.id:
+            usuario_test.rol_id = rol_admin.id
         db.commit()
     else:
         nuevo = Usuario(
             username="test",
             password=password_hash,
-            role_id=rol_admin.id,
+            rol_id=rol_admin.id,
             is_active=True,
             status=1
         )
         db.add(nuevo)
         db.commit()
 
-def create_usuario(db: Session, username: str, password: str, role_id: int):
+def create_usuario(db: Session, username: str, password: str, rol_id: int):
     # Validar rol
-    rol = db.query(Rol).filter(Rol.id == role_id).first()
+    rol = db.query(Rol).filter(Rol.id == rol_id).first()
     if not rol:
         raise ValueError("El rol especificado no existe.")
     # if not rol.is_active: # Commnenting out as Rol model might not have is_active or it's handled differently, but keeping safe generally. 
@@ -50,7 +50,7 @@ def create_usuario(db: Session, username: str, password: str, role_id: int):
     nuevo_usuario = Usuario(
         username=username, 
         password=hashed_password, 
-        role_id=role_id,
+        rol_id=rol_id,
         is_active=True,
         status=1
     )
@@ -62,18 +62,18 @@ def create_usuario(db: Session, username: str, password: str, role_id: int):
 def get_usuario_by_username(db: Session, username: str):
     return db.query(Usuario).filter(Usuario.username == username).first()
 
-def update_usuario(db: Session, user_id: int, username: str = None, role_id: int = None, is_active: bool = None):
+def update_usuario(db: Session, user_id: int, username: str = None, rol_id: int = None, is_active: bool = None):
     usuario_db = db.query(Usuario).filter(Usuario.id == user_id).first()
     if not usuario_db:
         return None
 
-    if role_id is not None:
-        rol = db.query(Rol).filter(Rol.id == role_id).first()
+    if rol_id is not None:
+        rol = db.query(Rol).filter(Rol.id == rol_id).first()
         if not rol:
             raise ValueError("El rol especificado no existe.")
         if not rol.is_active:
             raise ValueError("El rol especificado no está activo.")
-        usuario_db.role_id = role_id
+        usuario_db.rol_id = rol_id
 
     if username is not None:
         usuario_db.username = username

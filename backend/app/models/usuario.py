@@ -9,7 +9,7 @@ class Usuario(Base):
     id = Column(Integer, primary_key=True, index=True)
     username = Column(String(50), unique=True, nullable=False)
     password = Column(String(255), nullable=False)
-    role_id = Column(Integer, ForeignKey("roles.id"), nullable=False, default=1)
+    rol_id = Column("role_id", Integer, ForeignKey("roles.id"), nullable=False, default=1)
     status = Column(Integer, nullable=False, default=1)
     created_at = Column(DateTime, default=func.now())
     updated_at = Column(DateTime, default=func.now(), onupdate=func.now())

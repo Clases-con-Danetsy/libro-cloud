@@ -24,6 +24,7 @@ import MainLayout from "../layouts/MainLayout.astro";
 
   window.logout = function() {
     localStorage.removeItem("isLoggedIn");
+    localStorage.removeItem("rol_id");
     window.location.replace("/");
   }
 </script>

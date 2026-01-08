@@ -11,7 +11,7 @@ users_router = APIRouter(prefix="/usuarios", tags=["Usuarios"])
 def create_new_user(
     username: str = Body(...),
     password: str = Body(...),
-    role_id: int = Body(...),
+    rol_id: int = Body(...),
     db: Session = Depends(get_db)
 ):
     existing_user = get_usuario_by_username(db, username=username)
@@ -19,19 +19,19 @@ def create_new_user(
         raise HTTPException(status_code=400, detail="Username already registered")
         
     try:
-        return create_usuario(db=db, username=username, password=password, role_id=role_id)
+        return create_usuario(db=db, username=username, password=password, rol_id=rol_id)
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
 
 @users_router.get("/")
 def read_users(db: Session = Depends(get_db)):
-    results = db.query(Usuario.id, Usuario.username, Usuario.status, Rol.nombre.label("role_name")).join(Rol).all()
+    results = db.query(Usuario.id, Usuario.username, Usuario.status, Rol.nombre.label("rol_nombre")).join(Rol).all()
     return [
         {
             "id": r.id,
             "username": r.username,
             "status": r.status,
-            "role_name": r.role_name
+            "rol_nombre": r.rol_nombre
         }
         for r in results
     ]
@@ -40,18 +40,18 @@ def read_users(db: Session = Depends(get_db)):
 def update_existing_user(
     user_id: int,
     username: str = Body(None),
-    role_id: int = Body(None),
+    rol_id: int = Body(None),
     is_active: bool = Body(None),
     db: Session = Depends(get_db)
 ):
     try:
-        updated_user = update_usuario(db=db, user_id=user_id, username=username, role_id=role_id, is_active=is_active)
+        updated_user = update_usuario(db=db, user_id=user_id, username=username, rol_id=rol_id, is_active=is_active)
         if not updated_user:
             raise HTTPException(status_code=404, detail="Usuario no encontrado")
         return {
             "id": updated_user.id,
             "username": updated_user.username,
-            "role_id": updated_user.role_id,
+            "rol_id": updated_user.rol_id,
             "is_active": updated_user.is_active
         }
     except ValueError as e:
@@ -75,7 +75,7 @@ def activate_user_endpoint(user_id: int, db: Session = Depends(get_db)):
 def login(username: str = Body(...), password: str = Body(...), db: Session = Depends(get_db)):
     try:
         user = login_usuario(db, username, password)
-        return {"message": "Login successful", "user": {"id": user.id, "username": user.username, "role_id": user.role_id}}
+        return {"message": "Login successful", "user": {"id": user.id, "username": user.username, "rol_id": user.rol_id}}
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
 
