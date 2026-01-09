@@ -1,0 +1,169 @@
+---
+import Layout from "../layouts/layout.astro";
+import Menu from "../components/menu.astro";
+import Sidebar from "../components/sidebar.astro";
+---
+
+<Layout title="Usuarios">
+  <Menu />
+  <div class="flex flex-row gap-4">
+    <Sidebar />
+    <div class="flex-1 p-6">
+      <h1 class="text-2xl font-bold mb-4">Usuarios</h1>
+      <div
+        id="errorMessage"
+        class="hidden text-sm text-center p-2 rounded mb-4"
+      >
+      </div>
+
+      <div class="overflow-x-auto">
+        <table
+          id="usuariosTable"
+          class="min-w-full bg-white border border-gray-300"
+        >
+          <thead>
+            <tr class="bg-gray-100 border-b">
+              <th
+                class="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider"
+                >Nombre del Usuario</th
+              >
+              <th
+                class="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider"
+                >Rol</th
+              >
+              <th
+                class="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider"
+                >Estado</th
+              >
+              <th
+                class="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider"
+                >Fecha de Creación</th
+              >
+              <th
+                class="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider"
+                >Última Actualización</th
+              >
+            </tr>
+          </thead>
+          <tbody id="usuariosBody">
+            <!-- Los usuarios se cargarán aquí dinámicamente -->
+          </tbody>
+        </table>
+      </div>
+
+      <div id="loadingMessage" class="text-center p-4 text-gray-600">
+        Cargando usuarios...
+      </div>
+
+      <div id="emptyMessage" class="hidden text-center p-4 text-gray-500">
+        No hay usuarios disponibles
+      </div>
+    </div>
+  </div>
+</Layout>
+
+<script is:inline>
+  const errorMessage = document.getElementById("errorMessage");
+  const loadingMessage = document.getElementById("loadingMessage");
+  const emptyMessage = document.getElementById("emptyMessage");
+  const usuariosBody = document.getElementById("usuariosBody");
+
+  async function getusuarios() {
+    const url = new URL("http://localhost:8000/user/get");
+
+    try {
+      const response = await fetch(url.toString(), {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+
+      const data = await response.json();
+      return data;
+    } catch (error) {
+      if (errorMessage) {
+        errorMessage.textContent =
+          "Error al conectar con el servidor. Verifica que el backend esté corriendo.";
+        errorMessage.classList.remove("hidden");
+        errorMessage.classList.add("text-red-600", "bg-red-50");
+      }
+      console.error("Error:", error);
+      throw error;
+    }
+  }
+
+  function formatDate(dateString) {
+    if (!dateString) return "N/A";
+    const date = new Date(dateString);
+    return date.toLocaleString("es-MX", {
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit",
+      hour: "2-digit",
+      minute: "2-digit",
+    });
+  }
+
+  async function mountusuarios() {
+    try {
+      if (loadingMessage) loadingMessage.classList.remove("hidden");
+
+      const data = await getusuarios();
+      console.log(data);
+      if (loadingMessage) loadingMessage.classList.add("hidden");
+
+      // Verifica si data tiene usuarios (ajusta según la estructura de tu respuesta)
+      const usuarios = data.usuarios || data.data || data;
+
+      if (!usuarios || usuarios.length === 0 || data.empty) {
+        if (emptyMessage) emptyMessage.classList.remove("hidden");
+        return;
+      }
+
+      if (usuariosBody) {
+        usuariosBody.innerHTML = ""; // Limpiar contenido previo
+
+        usuarios.forEach((Usuario, index) => {
+          const row = document.createElement("tr");
+          row.classList.add(
+            "border-b",
+            "hover:bg-gray-50",
+            "transition-colors"
+          );
+
+          // Alterna colores de fila
+          if (index % 2 === 0) {
+            row.classList.add("bg-white");
+          } else {
+            row.classList.add("bg-gray-50");
+          }
+
+          row.innerHTML = `
+            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">${Usuario.username}</td>
+            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">${Usuario.rol}</td>
+            <td class="px-6 py-4 whitespace-nowrap text-sm">
+              <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
+                Usuario.status === "active" || Usuario.status === 1
+                  ? "bg-green-100 text-green-800"
+                  : "bg-red-100 text-red-800"
+              }">
+                ${Usuario.status === "active" || Usuario.status === 1 ? "Activo" : "Inactivo"}
+              </span>
+            </td>
+            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${formatDate(Usuario.created_at)}</td>
+            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${formatDate(Usuario.updated_at)}</td>
+          `;
+
+          usuariosBody.appendChild(row);
+        });
+      }
+    } catch (error) {
+      if (loadingMessage) loadingMessage.classList.add("hidden");
+      console.error("Error al montar usuarios:", error);
+    }
+  }
+
+  // Ejecutar al cargar la página
+  mountusuarios();
+</script>

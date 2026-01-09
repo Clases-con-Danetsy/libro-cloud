@@ -31,7 +31,6 @@ def listar_usuarios(db: Session = Depends(get_db)):
             "updated_at": u.updated_at.isoformat(),
         }
         for u in usuarios
-        if u.status == 1
     ]
 
 
