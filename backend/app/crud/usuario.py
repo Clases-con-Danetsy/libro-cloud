@@ -114,4 +114,12 @@ def login_usuario(db: Session, username: str, password: str):
     if not usuario.is_active:
         raise ValueError("Usuario no está activo")
         
-    return usuario
+    # Validations passed
+    rol_nombre = usuario.rol.nombre if usuario.rol else None
+
+    return {
+        "id": usuario.id,
+        "username": usuario.username,
+        "role_id": usuario.rol_id,
+        "rol_name": rol_nombre
+    }

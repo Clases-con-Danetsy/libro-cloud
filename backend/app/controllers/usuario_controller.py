@@ -74,8 +74,8 @@ def activate_user_endpoint(user_id: int, db: Session = Depends(get_db)):
 @router.post("/login", tags=["Usuarios"])
 def login(username: str = Body(...), password: str = Body(...), db: Session = Depends(get_db)):
     try:
-        user = login_usuario(db, username, password)
-        return {"message": "Login successful", "user": {"id": user.id, "username": user.username, "rol_id": user.rol_id}}
+        user_response = login_usuario(db, username, password)
+        return {"message": "Login successful", "user": user_response}
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
 
