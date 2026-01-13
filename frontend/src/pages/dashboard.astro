@@ -52,11 +52,6 @@ import Menu from "../components/menu.astro";
       }
     }
 
-    // Cerrar sesión
-    document.getElementById("logoutBtn")?.addEventListener("click", () => {
-      localStorage.removeItem("user");
-      localStorage.removeItem("isLoggedIn");
-      window.location.href = "/";
-    });
+
   </script>
 </Layout>
