@@ -68,8 +68,8 @@ def update_usuario(db: Session, old_username: str, new_username: str, new_rol: i
     return "Usuario actualizado correctamente"
 
 
-def delete_usuario(db: Session, username: str):
-    usuario = db.query(Usuario).filter(Usuario.username == username).first()
+def delete_usuario(db: Session, id: int):
+    usuario = db.query(Usuario).filter(Usuario.id == id).first()
     if usuario:
         usuario.status = 0
         usuario.updated_at = datetime.now()
@@ -78,8 +78,8 @@ def delete_usuario(db: Session, username: str):
     return "Usuario eliminado correctamente"
 
 
-def activate_usuario(db: Session, username: str):
-    usuario = db.query(Usuario).filter(Usuario.username == username).first()
+def activate_usuario(db: Session, id: int):
+    usuario = db.query(Usuario).filter(Usuario.id == id).first()
     if usuario:
         usuario.status = 1
         usuario.updated_at = datetime.now()

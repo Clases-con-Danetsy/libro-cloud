@@ -38,12 +38,12 @@ def actualizar_rol(
 
 
 @router.put("/activate")
-def activar_rol(db: Session = Depends(get_db), rol_name: str = Query(...)):
-    mensaje = activate_rol(db, rol_name)
+def activar_rol(db: Session = Depends(get_db), id: int = Query(...)):
+    mensaje = activate_rol(db, id)
     return {"mensaje": mensaje}
 
 
 @router.delete("/delete")
-def eliminar_rol(db: Session = Depends(get_db), rol_name: str = Query(...)):
-    mensaje = delete_rol(db, rol_name)
+def eliminar_rol(db: Session = Depends(get_db), id: int = Query(...)):
+    mensaje = delete_rol(db, id)
     return {"mensaje": mensaje}

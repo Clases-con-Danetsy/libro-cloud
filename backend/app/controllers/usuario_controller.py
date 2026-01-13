@@ -59,14 +59,14 @@ def actualizar_usuario(
 
 
 @router.put("/activate")
-def activar_usuario(db: Session = Depends(get_db), username: str = Query(...)):
-    mensaje = activate_usuario(db, username=username)
+def activar_usuario(db: Session = Depends(get_db), id: int = Query(...)):
+    mensaje = activate_usuario(db, id=id)
     return {"mensaje": mensaje}
 
 
 @router.delete("/delete")
-def eliminar_usuario(db: Session = Depends(get_db), username: str = Query(...)):
-    mensaje = delete_usuario(db, username=username)
+def eliminar_usuario(db: Session = Depends(get_db), id: int = Query(...)):
+    mensaje = delete_usuario(db, id=id)
     return {"mensaje": mensaje}
 
 

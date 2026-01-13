@@ -1,0 +1,28 @@
+---
+import {
+  Alert,
+  AlertDescription,
+  AlertTitle,
+} from "@/components/starwind/alert";
+import Flame from "@tabler/icons/outline/flame.svg";
+---
+
+<div id="modal" class="bg-gray-500/50 z-50 h-screen w-screen hidden">
+  <Alert
+    variant="error"
+    class="absolute z-10 translate-x-1/2 -translate-y-1/2 top-1/2 left-0 w-1/2"
+  >
+    <AlertTitle><Flame />Danger!</AlertTitle>
+    <AlertDescription> <slot /></AlertDescription>
+    <button
+      id="cancelarconsecuencias"
+      class="bg-gray-300 hover:bg-gray-400 text-black px-4 py-2 rounded mr-2"
+      >Cancelar</button
+    >
+    <button
+      id="aceptarconsecuencias"
+      class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded"
+      >Aceptar</button
+    >
+  </Alert>
+</div>

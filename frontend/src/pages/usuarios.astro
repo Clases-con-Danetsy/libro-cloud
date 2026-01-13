@@ -2,6 +2,7 @@
 import Layout from "../layouts/layout.astro";
 import Menu from "../components/menu.astro";
 import Sidebar from "../components/sidebar.astro";
+import ModalAlerta from "../components/modalAlerta.astro";
 ---
 
 <Layout title="Usuarios">
@@ -15,7 +16,9 @@ import Sidebar from "../components/sidebar.astro";
         class="hidden text-sm text-center p-2 rounded mb-4"
       >
       </div>
-
+      <ModalAlerta>
+        <slot>Estas seguro de eliminar este usuario?</slot>
+      </ModalAlerta>
       <div class="overflow-x-auto">
         <table
           id="usuariosTable"
@@ -43,6 +46,10 @@ import Sidebar from "../components/sidebar.astro";
                 class="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider"
                 >Última Actualización</th
               >
+              <th
+                class="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider"
+                >Acciones</th
+              >
             </tr>
           </thead>
           <tbody id="usuariosBody">
@@ -67,6 +74,9 @@ import Sidebar from "../components/sidebar.astro";
   const loadingMessage = document.getElementById("loadingMessage");
   const emptyMessage = document.getElementById("emptyMessage");
   const usuariosBody = document.getElementById("usuariosBody");
+  const edit = "src/assets/icons/edit.svg";
+  const trash = "src/assets/icons/trash.svg";
+  const check = "src/assets/icons/check.svg";
 
   async function getusuarios() {
     const url = new URL("http://localhost:8000/user/get");
@@ -110,7 +120,6 @@ import Sidebar from "../components/sidebar.astro";
       if (loadingMessage) loadingMessage.classList.remove("hidden");
 
       const data = await getusuarios();
-      console.log(data);
       if (loadingMessage) loadingMessage.classList.add("hidden");
 
       // Verifica si data tiene usuarios (ajusta según la estructura de tu respuesta)
@@ -153,6 +162,11 @@ import Sidebar from "../components/sidebar.astro";
             </td>
             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${formatDate(Usuario.created_at)}</td>
             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${formatDate(Usuario.updated_at)}</td>
+            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+              <button onclick="editUsuario(${Usuario.id})" class="pr-8 py-2 cursor-pointer rounded-md"><img class="w-5 h-5" src=${edit}></button>
+              <button onclick="deleteUsuario(${Usuario.id})" class="pr-8 py-2 cursor-pointer rounded-md"><img class="w-5 h-5" src=${trash}></button>
+              <button onclick="activateUsuario(${Usuario.id})" class="pr-8 py-2 cursor-pointer rounded-md"><img class="w-5 h-5" src=${check}></button>
+            </td>
           `;
 
           usuariosBody.appendChild(row);
@@ -161,6 +175,76 @@ import Sidebar from "../components/sidebar.astro";
     } catch (error) {
       if (loadingMessage) loadingMessage.classList.add("hidden");
       console.error("Error al montar usuarios:", error);
+    }
+  }
+
+  function editUsuario(id) {
+    console.log("Editar usuario:", id);
+  }
+
+  let userToDeleteId = null;
+
+  const btnAceptar = document.getElementById("aceptarconsecuencias");
+  const btnCancelar = document.getElementById("cancelarconsecuencias");
+
+  if (btnAceptar) {
+    btnAceptar.addEventListener("click", async () => {
+      if (!userToDeleteId) return;
+
+      try {
+        const url = new URL("http://localhost:8000/user/delete");
+        url.searchParams.set("id", userToDeleteId);
+
+        const response = await fetch(url.toString(), {
+          method: "DELETE",
+          headers: {
+            "Content-Type": "application/json",
+          },
+        });
+
+        // Optional: Check status
+        if (response.ok) {
+          window.location.reload();
+        } else {
+          console.error("Error deleting user");
+        }
+      } catch (error) {
+        console.error("Error al eliminar usuario:", error);
+      } finally {
+        modal.classList.add("hidden");
+        userToDeleteId = null;
+      }
+    });
+  }
+
+  if (btnCancelar) {
+    btnCancelar.addEventListener("click", () => {
+      modal.classList.add("hidden");
+      userToDeleteId = null;
+    });
+  }
+
+  function deleteUsuario(id) {
+    userToDeleteId = id;
+    modal.classList.remove("hidden");
+  }
+
+  async function activateUsuario(id) {
+    try {
+      const url = new URL("http://localhost:8000/user/activate");
+      url.searchParams.set("id", id);
+
+      const response = await fetch(url.toString(), {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+
+      const data = await response.json();
+      window.location.reload();
+    } catch (error) {
+      console.error("Error al activar usuario:", error);
     }
   }
 

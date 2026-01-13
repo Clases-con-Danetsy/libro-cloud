@@ -2,6 +2,7 @@
 import Layout from "../layouts/layout.astro";
 import Menu from "../components/menu.astro";
 import Sidebar from "../components/sidebar.astro";
+import ModalAlerta from "../components/modalAlerta.astro";
 ---
 
 <Layout title="Roles">
@@ -15,7 +16,9 @@ import Sidebar from "../components/sidebar.astro";
         class="hidden text-sm text-center p-2 rounded mb-4"
       >
       </div>
-
+      <ModalAlerta>
+        <slot>Estas seguro de eliminar este rol?</slot>
+      </ModalAlerta>
       <div class="overflow-x-auto">
         <table
           id="rolesTable"
@@ -38,6 +41,10 @@ import Sidebar from "../components/sidebar.astro";
               <th
                 class="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider"
                 >Última Actualización</th
+              >
+              <th
+                class="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider"
+                >Acciones</th
               >
             </tr>
           </thead>
@@ -63,6 +70,10 @@ import Sidebar from "../components/sidebar.astro";
   const loadingMessage = document.getElementById("loadingMessage");
   const emptyMessage = document.getElementById("emptyMessage");
   const rolesBody = document.getElementById("rolesBody");
+  const edit = "src/assets/icons/edit.svg";
+  const trash = "src/assets/icons/trash.svg";
+  const check = "src/assets/icons/check.svg";
+  const modal = document.getElementById("modal");
 
   async function getRoles() {
     const url = new URL("http://localhost:8000/rol/get");
@@ -148,6 +159,11 @@ import Sidebar from "../components/sidebar.astro";
             </td>
             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${formatDate(rol.created_at)}</td>
             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${formatDate(rol.updated_at)}</td>
+            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+              <button onclick="editRol(${rol.id})" class="pr-8 py-2 cursor-pointer rounded-md"><img class="w-5 h-5" src=${edit}></button>
+              <button onclick="deleteRol(${rol.id})" class="pr-8 py-2 cursor-pointer rounded-md"><img class="w-5 h-5" src=${trash}></button>
+              <button onclick="activateRol(${rol.id})" class="pr-8 py-2 cursor-pointer rounded-md"><img class="w-5 h-5" src=${check}></button>
+            </td>
           `;
 
           rolesBody.appendChild(row);
@@ -158,7 +174,75 @@ import Sidebar from "../components/sidebar.astro";
       console.error("Error al montar roles:", error);
     }
   }
+  function editRol(id) {
+    console.log("Editar rol:", id);
+  }
 
+  let roleToDeleteId = null;
+
+  const btnAceptar = document.getElementById("aceptarconsecuencias");
+  const btnCancelar = document.getElementById("cancelarconsecuencias");
+
+  if (btnAceptar) {
+    btnAceptar.addEventListener("click", async () => {
+      if (!roleToDeleteId) return;
+
+      try {
+        const url = new URL("http://localhost:8000/rol/delete");
+        url.searchParams.set("id", roleToDeleteId);
+
+        const response = await fetch(url.toString(), {
+          method: "DELETE",
+          headers: {
+            "Content-Type": "application/json",
+          },
+        });
+
+        // Optional: Check status
+        if (response.ok) {
+          window.location.reload();
+        } else {
+          console.error("Error deleting role");
+        }
+      } catch (error) {
+        console.error("Error al eliminar rol:", error);
+      } finally {
+        modal.classList.add("hidden");
+        roleToDeleteId = null;
+      }
+    });
+  }
+
+  if (btnCancelar) {
+    btnCancelar.addEventListener("click", () => {
+      modal.classList.add("hidden");
+      roleToDeleteId = null;
+    });
+  }
+
+  function deleteRol(id) {
+    roleToDeleteId = id;
+    modal.classList.remove("hidden");
+  }
+
+  async function activateRol(id) {
+    try {
+      const url = new URL("http://localhost:8000/rol/activate");
+      url.searchParams.set("id", id);
+
+      const response = await fetch(url.toString(), {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+
+      const data = await response.json();
+      window.location.reload();
+    } catch (error) {
+      console.error("Error al activar usuario:", error);
+    }
+  }
   // Ejecutar al cargar la página
   mountRoles();
 </script>
