@@ -13,6 +13,5 @@ class Usuario(Base):
     status = Column(Integer, nullable=False, default=1)
     created_at = Column(DateTime, default=func.now())
     updated_at = Column(DateTime, default=func.now(), onupdate=func.now())
-    is_active = Column(Boolean, default=True)
 
     rol = relationship("Rol")

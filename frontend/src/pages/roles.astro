@@ -1,42 +1,33 @@
 ---
 import MainLayout from "../layouts/MainLayout.astro";
 import Sidebar from "../components/Sidebar.astro";
+import Menu from "../components/Menu.astro"; // ✅ menú reutilizable
 ---
 
-<MainLayout title="Usuarios">
+<MainLayout title="Roles">
   <div class="flex min-h-screen bg-gray-100">
     <Sidebar />
 
     <div class="flex-1 flex flex-col">
-      <!-- Top Menu -->
-      <header class="bg-white shadow-sm p-4">
-        <div class="max-w-7xl mx-auto flex justify-end">
-          <button
-            id="logout-btn"
-            class="bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-4 rounded"
-          >
-            Cerrar sesión
-          </button>
-        </div>
-      </header>
+      <!-- ✅ MENÚ REUTILIZABLE -->
+      <Menu />
 
       <main class="flex-1 p-10">
-        <div class="max-w-6xl mx-auto">
-          <h1 class="text-3xl font-bold mb-8">Usuarios</h1>
+        <div class="max-w-5xl mx-auto">
+          <h1 class="text-3xl font-bold mb-8">Roles</h1>
 
           <div class="bg-white shadow-md rounded-lg overflow-hidden">
-            <table class="min-w-full leading-normal">
+            <table class="min-w-full">
               <thead>
                 <tr>
-                  <th class="px-5 py-3 bg-gray-100 border-b text-left text-xs font-semibold">ID</th>
-                  <th class="px-5 py-3 bg-gray-100 border-b text-left text-xs font-semibold">Usuario</th>
-                  <th class="px-5 py-3 bg-gray-100 border-b text-left text-xs font-semibold">Rol</th>
-                  <th class="px-5 py-3 bg-gray-100 border-b text-left text-xs font-semibold">Creado</th>
-                  <th class="px-5 py-3 bg-gray-100 border-b text-left text-xs font-semibold">Actualizado</th>
-                  <th class="px-5 py-3 bg-gray-100 border-b text-left text-xs font-semibold">Estado</th>
+                  <th class="px-5 py-3 bg-gray-100 border-b">ID</th>
+                  <th class="px-5 py-3 bg-gray-100 border-b">Nombre</th>
+                  <th class="px-5 py-3 bg-gray-100 border-b">Creado</th>
+                  <th class="px-5 py-3 bg-gray-100 border-b">Actualizado</th>
+                  <th class="px-5 py-3 bg-gray-100 border-b">Estado</th>
                 </tr>
               </thead>
-              <tbody id="usuarios-table-body"></tbody>
+              <tbody id="roles-table-body"></tbody>
             </table>
           </div>
         </div>
@@ -46,37 +37,43 @@ import Sidebar from "../components/Sidebar.astro";
 </MainLayout>
 
 <script is:inline>
-  if (localStorage.getItem("isLoggedIn") !== "true") {
-    window.location.replace("/");
+  // ✅ FORMATO DE FECHA
+  function formatDate(dateString) {
+    if (!dateString) return "";
+    const date = new Date(dateString);
+    return date.toLocaleString("es-MX", {
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit",
+      hour: "2-digit",
+      minute: "2-digit"
+    });
   }
 
-  document.getElementById("logout-btn")?.addEventListener("click", () => {
-    localStorage.removeItem("isLoggedIn");
-    localStorage.removeItem("user");
-    window.location.replace("/");
-  });
+  async function loadRoles() {
+    const res = await fetch("http://localhost:8000/roles");
+    const roles = await res.json();
 
-  async function loadUsuarios() {
-    const res = await fetch("http://localhost:8000/usuarios");
-    const usuarios = await res.json();
-
-    const tbody = document.getElementById("usuarios-table-body");
+    const tbody = document.getElementById("roles-table-body");
     tbody.innerHTML = "";
 
-    usuarios.forEach(u => {
+    roles.forEach(r => {
       tbody.innerHTML += `
         <tr>
-          <td class="px-5 py-4 border-b">${u.id}</td>
-          <td class="px-5 py-4 border-b">${u.username}</td>
-          <td class="px-5 py-4 border-b">${u.rol_name}</td>
-          <td class="px-5 py-4 border-b">${u.created_at}</td>
-          <td class="px-5 py-4 border-b">${u.updated_at}</td>
+          <td class="px-5 py-4 border-b">${r.id}</td>
+          <td class="px-5 py-4 border-b">${r.nombre}</td>
+
+          <!-- ✅ FECHAS FORMATEADAS -->
+          <td class="px-5 py-4 border-b">${formatDate(r.created_at)}</td>
+          <td class="px-5 py-4 border-b">${formatDate(r.updated_at)}</td>
+
+          <!-- ✅ ESTADO CON COLORES (is_active) -->
           <td class="px-5 py-4 border-b">
             <span class="px-3 py-1 rounded-full text-xs font-semibold
-              ${u.is_active
+              ${r.is_active
                 ? 'border border-green-500 text-green-600 bg-green-50'
                 : 'border border-red-500 text-red-600 bg-red-50'}">
-              ${u.is_active ? "Activo" : "Inactivo"}
+              ${r.is_active ? "Activo" : "Inactivo"}
             </span>
           </td>
         </tr>
@@ -84,5 +81,5 @@ import Sidebar from "../components/Sidebar.astro";
     });
   }
 
-  loadUsuarios();
+  loadRoles();
 </script>
