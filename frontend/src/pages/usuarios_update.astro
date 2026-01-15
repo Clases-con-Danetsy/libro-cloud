@@ -1,0 +1,126 @@
+---
+import Layout from "../layouts/layout.astro";
+import Menu from "../components/menu.astro";
+import Sidebar from "../components/sidebar.astro";
+---
+
+<Layout title="Actualizar Usuario">
+  <Menu />
+  <div class="flex flex-row gap-4">
+    <Sidebar />
+    <div class="flex-1 p-6 max-w-xl">
+      <h1 class="text-2xl font-bold mb-6">Actualizar Usuario</h1>
+
+      <form id="UsuarioForm" class="space-y-4">
+        <div>
+          <label class="block text-sm font-medium">Nombre del Usuario</label>
+          <input
+            id="Usuario_name"
+            type="text"
+            class="w-full border rounded px-3 py-2"
+          />
+        </div>
+        <div>
+          <label class="block text-sm font-medium">Rol</label>
+          <select id="Usuario_rol" class="w-full border rounded px-3 py-2">
+            <option value="">Selecciona un rol</option>
+          </select>
+        </div>
+
+        <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded">
+          Guardar cambios
+        </button>
+        <button
+          type="button"
+          class="bg-red-600 text-white px-4 py-2 rounded"
+          onclick="window.location.href = '/usuarios'"
+        >
+          Cancelar
+        </button>
+      </form>
+
+      <div id="errorMessage" class="hidden text-red-600 mt-4"></div>
+    </div>
+  </div>
+</Layout>
+
+<script is:inline>
+  const params = new URLSearchParams(window.location.search);
+  const usuarioId = params.get("id");
+
+  let originalUsuario = null;
+  let roles = [];
+
+  async function getUsuario() {
+    const res = await fetch(`http://localhost:8000/user/get/${usuarioId}`);
+    const data = await res.json();
+    originalUsuario = data;
+
+    document.getElementById("Usuario_name").value = originalUsuario.username;
+  }
+
+  async function getRoles() {
+    const res = await fetch("http://127.0.0.1:8000/rol/get");
+    roles = await res.json();
+
+    const select = document.getElementById("Usuario_rol");
+    select.innerHTML = `<option value="">Selecciona un rol</option>`;
+
+    roles.forEach((rol) => {
+      const option = document.createElement("option");
+      option.value = rol.id;
+      option.textContent = rol.rol_name;
+      select.appendChild(option);
+    });
+  }
+
+  function seleccionarRolActual() {
+    if (!originalUsuario || !originalUsuario.rol_id) return;
+
+    const select = document.getElementById("Usuario_rol");
+    select.value = originalUsuario.rol_id;
+  }
+
+  document
+    .getElementById("UsuarioForm")
+    .addEventListener("submit", async (e) => {
+      e.preventDefault();
+
+      const newUsuarioName = document
+        .getElementById("Usuario_name")
+        .value.trim();
+
+      const finalUsuarioName =
+        newUsuarioName !== "" ? newUsuarioName : originalUsuario.username;
+
+      const selectedRolId =
+        document.getElementById("Usuario_rol").value || originalUsuario.rol_id;
+
+      const url = new URL("http://localhost:8000/user/update");
+      url.searchParams.set("id", usuarioId);
+      url.searchParams.set("new_username", finalUsuarioName);
+      url.searchParams.set("new_rol", selectedRolId);
+
+      try {
+        const response = await fetch(url.toString(), {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+        });
+
+        if (!response.ok) throw new Error();
+
+        window.location.href = "/usuarios";
+      } catch (err) {
+        console.error(err);
+        alert("Error al actualizar el usuario");
+      }
+    });
+
+  async function init() {
+    await getUsuario();
+    await getRoles();
+    seleccionarRolActual();
+  }
+
+  init();
+</script>

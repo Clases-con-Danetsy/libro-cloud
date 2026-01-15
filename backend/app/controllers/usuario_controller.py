@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, Query
+from fastapi import APIRouter, Depends, Query, Path
 from sqlalchemy.orm import Session
 from app.database import get_db
 from app.crud import (
@@ -9,6 +9,7 @@ from app.crud import (
     delete_usuario,
     activate_usuario,
     verificar_credenciales,
+    obtener_usuario_by_id,
 )
 
 router = APIRouter(prefix="/user", tags=["Usuarios"])
@@ -34,6 +35,22 @@ def listar_usuarios(db: Session = Depends(get_db)):
     ]
 
 
+@router.get("/get/{id}")
+def obtener_usuario_by_id_endpoint(
+    id: int = Path(..., gt=0),
+    db: Session = Depends(get_db),
+):
+    usuario = obtener_usuario_by_id(db, id)
+    return {
+        "id": usuario.id,
+        "username": usuario.username,
+        "rol": usuario.rol,
+        "status": usuario.status,
+        "created_at": usuario.created_at.isoformat(),
+        "updated_at": usuario.updated_at.isoformat(),
+    }
+
+
 @router.post("/create")
 def crear_usuario_endpoint(
     db: Session = Depends(get_db),
@@ -48,13 +65,11 @@ def crear_usuario_endpoint(
 @router.put("/update")
 def actualizar_usuario(
     db: Session = Depends(get_db),
-    old_username: str = Query(...),
+    id: int = Query(...),
     new_username: str = Query(...),
     new_rol: int = Query(...),
 ):
-    mensaje = update_usuario(
-        db, old_username=old_username, new_username=new_username, new_rol=new_rol
-    )
+    mensaje = update_usuario(db, id=id, new_username=new_username, new_rol=new_rol)
     return {"mensaje": mensaje}
 
 

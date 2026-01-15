@@ -31,8 +31,8 @@ def crear_rol(db: Session, rol_name: str):
     return "Rol creado correctamente"
 
 
-def update_rol(db: Session, old_rol_name: str, new_rol_name: str):
-    rol = db.query(Roles).filter(Roles.rol_name == old_rol_name).first()
+def update_rol(db: Session, id: int, new_rol_name: str):
+    rol = db.query(Roles).filter(Roles.id == id).first()
     if rol:
         rol.rol_name = new_rol_name
         rol.updated_at = datetime.now()
@@ -63,3 +63,7 @@ def activate_rol(db: Session, id: int):
 
 def obtener_roles(db: Session):
     return db.query(Roles).all()
+
+
+def obtener_rol_by_id(db: Session, id: int):
+    return db.query(Roles).filter(Roles.id == id).first()

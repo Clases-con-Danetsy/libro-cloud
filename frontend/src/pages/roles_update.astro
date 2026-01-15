@@ -1,0 +1,83 @@
+---
+import Layout from "../layouts/layout.astro";
+import Menu from "../components/menu.astro";
+import Sidebar from "../components/sidebar.astro";
+---
+
+<Layout title="Actualizar Rol">
+  <Menu />
+  <div class="flex flex-row gap-4">
+    <Sidebar />
+    <div class="flex-1 p-6 max-w-xl">
+      <h1 class="text-2xl font-bold mb-6">Actualizar Rol</h1>
+
+      <form id="rolForm" class="space-y-4">
+        <div>
+          <label class="block text-sm font-medium">Nombre del rol</label>
+          <input
+            id="rol_name"
+            type="text"
+            class="w-full border rounded px-3 py-2"
+          />
+        </div>
+
+        <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded">
+          Guardar cambios
+        </button>
+        <button
+          type="button"
+          class="bg-red-600 text-white px-4 py-2 rounded"
+          onclick="window.location.href = '/roles'"
+        >
+          Cancelar
+        </button>
+      </form>
+
+      <div id="errorMessage" class="hidden text-red-600 mt-4"></div>
+    </div>
+  </div>
+</Layout>
+
+<script is:inline>
+  const params = new URLSearchParams(window.location.search);
+  const roleId = params.get("id");
+  let originalRol = null;
+  async function getRol() {
+    const res = await fetch(`http://localhost:8000/rol/get/${roleId}`);
+    const data = await res.json();
+    originalRol = data;
+
+    document.getElementById("rol_name").value = originalRol.rol_name;
+  }
+
+  document.getElementById("rolForm").addEventListener("submit", async (e) => {
+    e.preventDefault();
+
+    const newRolName = document.getElementById("rol_name").value.trim();
+
+    const oldRolName = originalRol.rol_name;
+    const finalRolName = newRolName !== "" ? newRolName : originalRol.rol_name;
+
+    const url = new URL("http://localhost:8000/rol/update");
+    url.searchParams.set("id", roleId);
+    url.searchParams.set("new_rol_name", finalRolName);
+
+    try {
+      const response = await fetch(url.toString(), {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+
+      if (!response.ok) throw new Error("Error al actualizar rol");
+
+      window.location.href = "/roles";
+    } catch (err) {
+      console.error(err);
+      alert("Error al actualizar el rol");
+    }
+  });
+
+  getRol();
+</script>

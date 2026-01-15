@@ -48,12 +48,12 @@ def obtener_usuarios(db: Session):
     return db.query(Usuario).all()
 
 
-def obtener_usuario(db: Session, username: str):
-    return db.query(Usuario).filter(Usuario.username == username).first()
+def obtener_usuario_by_id(db: Session, id: int):
+    return db.query(Usuario).filter(Usuario.id == id).first()
 
 
-def update_usuario(db: Session, old_username: str, new_username: str, new_rol: int):
-    usuario = db.query(Usuario).filter(Usuario.username == old_username).first()
+def update_usuario(db: Session, id: str, new_username: str, new_rol: int):
+    usuario = db.query(Usuario).filter(Usuario.id == id).first()
     if usuario:
         rol_obj = db.query(Roles).filter(Roles.id == new_rol).first()
         if not rol_obj:

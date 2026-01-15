@@ -179,7 +179,7 @@ import ModalAlerta from "../components/modalAlerta.astro";
   }
 
   function editUsuario(id) {
-    console.log("Editar usuario:", id);
+    window.location.href = `/usuarios_update?id=${id}`;
   }
 
   let userToDeleteId = null;

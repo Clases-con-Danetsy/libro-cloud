@@ -1,7 +1,14 @@
-from fastapi import APIRouter, Depends, Query
+from fastapi import APIRouter, Depends, Query, Path
 from sqlalchemy.orm import Session
 from app.database import get_db
-from app.crud import crear_rol, obtener_roles, update_rol, delete_rol, activate_rol
+from app.crud import (
+    crear_rol,
+    obtener_roles,
+    update_rol,
+    delete_rol,
+    activate_rol,
+    obtener_rol_by_id,
+)
 
 router = APIRouter(prefix="/rol", tags=["Roles"])
 
@@ -21,6 +28,21 @@ def listar_roles(db: Session = Depends(get_db)):
     ]
 
 
+@router.get("/get/{id}")
+def obtener_rol_by_id_endpoint(
+    id: int = Path(..., gt=0),
+    db: Session = Depends(get_db),
+):
+    rol = obtener_rol_by_id(db, id)
+    return {
+        "id": rol.id,
+        "rol_name": rol.rol_name,
+        "status": rol.status,
+        "created_at": rol.created_at.isoformat(),
+        "updated_at": rol.updated_at.isoformat(),
+    }
+
+
 @router.post("/create")
 def crear_rol_endpoint(db: Session = Depends(get_db), rol_name: str = Query(...)):
     mensaje = crear_rol(db, rol_name)
@@ -30,10 +52,10 @@ def crear_rol_endpoint(db: Session = Depends(get_db), rol_name: str = Query(...)
 @router.put("/update")
 def actualizar_rol(
     db: Session = Depends(get_db),
-    old_rol_name: str = Query(...),
+    id: int = Query(...),
     new_rol_name: str = Query(...),
 ):
-    mensaje = update_rol(db, old_rol_name, new_rol_name)
+    mensaje = update_rol(db, id, new_rol_name)
     return {"mensaje": mensaje}
 
 

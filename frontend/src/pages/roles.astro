@@ -175,7 +175,7 @@ import ModalAlerta from "../components/modalAlerta.astro";
     }
   }
   function editRol(id) {
-    console.log("Editar rol:", id);
+    window.location.href = `/roles_update?id=${id}`;
   }
 
   let roleToDeleteId = null;
