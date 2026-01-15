@@ -46,7 +46,7 @@ import Menu from "../components/Menu.astro"; // ✅ menú reutilizable
       month: "2-digit",
       day: "2-digit",
       hour: "2-digit",
-      minute: "2-digit"
+      minute: "2-digit",
     });
   }
 
@@ -57,7 +57,7 @@ import Menu from "../components/Menu.astro"; // ✅ menú reutilizable
     const tbody = document.getElementById("roles-table-body");
     tbody.innerHTML = "";
 
-    roles.forEach(r => {
+    roles.forEach((r) => {
       tbody.innerHTML += `
         <tr>
           <td class="px-5 py-4 border-b">${r.id}</td>
@@ -67,13 +67,15 @@ import Menu from "../components/Menu.astro"; // ✅ menú reutilizable
           <td class="px-5 py-4 border-b">${formatDate(r.created_at)}</td>
           <td class="px-5 py-4 border-b">${formatDate(r.updated_at)}</td>
 
-          <!-- ✅ ESTADO CON COLORES (is_active) -->
+          <!-- ✅ ESTADO CON COLORES (status) -->
           <td class="px-5 py-4 border-b">
             <span class="px-3 py-1 rounded-full text-xs font-semibold
-              ${r.is_active
-                ? 'border border-green-500 text-green-600 bg-green-50'
-                : 'border border-red-500 text-red-600 bg-red-50'}">
-              ${r.is_active ? "Activo" : "Inactivo"}
+              ${
+                r.status
+                  ? "border border-green-500 text-green-600 bg-green-50"
+                  : "border border-red-500 text-red-600 bg-red-50"
+              }">
+              ${r.status ? "Activo" : "Inactivo"}
             </span>
           </td>
         </tr>

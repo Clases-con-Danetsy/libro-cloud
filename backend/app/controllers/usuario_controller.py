@@ -7,7 +7,7 @@ from app.crud.usuario import (
     update_usuario,
     delete_usuario,
     activate_usuario,
-    login_usuario
+    login_usuario,
 )
 from app.models import Usuario, Rol
 
@@ -20,21 +20,23 @@ def create_new_user(
     username: str = Body(...),
     password: str = Body(...),
     rol_id: int = Body(...),
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
 ):
     existing_user = get_usuario_by_username(db, username=username)
     if existing_user:
         raise HTTPException(status_code=400, detail="Username already registered")
 
     try:
-        usuario = create_usuario(db=db, username=username, password=password, rol_id=rol_id)
+        usuario = create_usuario(
+            db=db, username=username, password=password, rol_id=rol_id
+        )
         return {
             "id": usuario.id,
             "username": usuario.username,
             "rol_id": usuario.rol_id,
             "status": usuario.status,
             "created_at": usuario.created_at,
-            "updated_at": usuario.updated_at
+            "updated_at": usuario.updated_at,
         }
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
@@ -49,7 +51,7 @@ def read_users(db: Session = Depends(get_db)):
             Usuario.status,
             Usuario.created_at,
             Usuario.updated_at,
-            Rol.nombre.label("rol_name")
+            Rol.nombre.label("rol_name"),
         )
         .join(Rol)
         .all()
@@ -62,7 +64,7 @@ def read_users(db: Session = Depends(get_db)):
             "rol_name": r.rol_name,
             "status": r.status,
             "created_at": r.created_at,
-            "updated_at": r.updated_at
+            "updated_at": r.updated_at,
         }
         for r in results
     ]
@@ -73,16 +75,12 @@ def update_existing_user(
     user_id: int,
     username: str = Body(None),
     rol_id: int = Body(None),
-    status: int = Body(None),
-    db: Session = Depends(get_db)
+    status: bool = Body(None),
+    db: Session = Depends(get_db),
 ):
     try:
         updated_user = update_usuario(
-            db=db,
-            user_id=user_id,
-            username=username,
-            rol_id=rol_id,
-            status=status
+            db=db, user_id=user_id, username=username, rol_id=rol_id, status=status
         )
 
         if not updated_user:
@@ -94,7 +92,7 @@ def update_existing_user(
             "rol_id": updated_user.rol_id,
             "status": updated_user.status,
             "created_at": updated_user.created_at,
-            "updated_at": updated_user.updated_at
+            "updated_at": updated_user.updated_at,
         }
 
     except ValueError as e:
@@ -110,7 +108,7 @@ def delete_user_endpoint(user_id: int, db: Session = Depends(get_db)):
     return {
         "message": "Usuario desactivado correctamente",
         "id": deleted_user.id,
-        "status": deleted_user.status
+        "status": deleted_user.status,
     }
 
 
@@ -123,22 +121,17 @@ def activate_user_endpoint(user_id: int, db: Session = Depends(get_db)):
     return {
         "message": "Usuario activado correctamente",
         "id": activated_user.id,
-        "status": activated_user.status
+        "status": activated_user.status,
     }
 
 
 @router.post("/login", tags=["Usuarios"])
 def login(
-    username: str = Body(...),
-    password: str = Body(...),
-    db: Session = Depends(get_db)
+    username: str = Body(...), password: str = Body(...), db: Session = Depends(get_db)
 ):
     try:
         user_response = login_usuario(db, username, password)
-        return {
-            "message": "Login successful",
-            "user": user_response
-        }
+        return {"message": "Login successful", "user": user_response}
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
 

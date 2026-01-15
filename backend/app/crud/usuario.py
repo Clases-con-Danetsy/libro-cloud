@@ -2,6 +2,7 @@ from sqlalchemy.orm import Session
 from werkzeug.security import generate_password_hash, check_password_hash
 from app.models import Usuario, Rol
 
+
 def crear_usuario_inicial(db: Session):
     # Ensure admin role exists first
     rol_admin = db.query(Rol).filter(Rol.nombre == "admin").first()
@@ -16,7 +17,7 @@ def crear_usuario_inicial(db: Session):
 
     if usuario_test:
         usuario_test.password = password_hash
-        usuario_test.status = 1  # ACTIVO
+        usuario_test.status = True  # ACTIVO
         if usuario_test.rol_id != rol_admin.id:
             usuario_test.rol_id = rol_admin.id
         db.commit()
@@ -25,17 +26,18 @@ def crear_usuario_inicial(db: Session):
             username="test",
             password=password_hash,
             rol_id=rol_admin.id,
-            status=1  # ACTIVO
+            status=True,  # ACTIVO
         )
         db.add(nuevo)
         db.commit()
+
 
 def create_usuario(db: Session, username: str, password: str, rol_id: int):
     rol = db.query(Rol).filter(Rol.id == rol_id).first()
     if not rol:
         raise ValueError("El rol especificado no existe.")
 
-    if hasattr(rol, "status") and rol.status != 1:
+    if hasattr(rol, "status") and rol.status != True:
         raise ValueError("El rol especificado no está activo.")
 
     hashed_password = generate_password_hash(password)
@@ -43,17 +45,25 @@ def create_usuario(db: Session, username: str, password: str, rol_id: int):
         username=username,
         password=hashed_password,
         rol_id=rol_id,
-        status=1  # ACTIVO
+        status=True,  # ACTIVO
     )
     db.add(nuevo_usuario)
     db.commit()
     db.refresh(nuevo_usuario)
     return nuevo_usuario
 
+
 def get_usuario_by_username(db: Session, username: str):
     return db.query(Usuario).filter(Usuario.username == username).first()
 
-def update_usuario(db: Session, user_id: int, username: str = None, rol_id: int = None, status: int = None):
+
+def update_usuario(
+    db: Session,
+    user_id: int,
+    username: str = None,
+    rol_id: int = None,
+    status: bool = None,
+):
     usuario_db = db.query(Usuario).filter(Usuario.id == user_id).first()
     if not usuario_db:
         return None
@@ -62,7 +72,7 @@ def update_usuario(db: Session, user_id: int, username: str = None, rol_id: int 
         rol = db.query(Rol).filter(Rol.id == rol_id).first()
         if not rol:
             raise ValueError("El rol especificado no existe.")
-        if hasattr(rol, "status") and rol.status != 1:
+        if hasattr(rol, "status") and rol.status != True:
             raise ValueError("El rol especificado no está activo.")
         usuario_db.rol_id = rol_id
 
@@ -76,23 +86,26 @@ def update_usuario(db: Session, user_id: int, username: str = None, rol_id: int 
     db.refresh(usuario_db)
     return usuario_db
 
+
 def delete_usuario(db: Session, user_id: int):
     usuario_db = db.query(Usuario).filter(Usuario.id == user_id).first()
     if not usuario_db:
         return None
-    usuario_db.status = 0  # INACTIVO
+    usuario_db.status = False  # INACTIVO
     db.commit()
     db.refresh(usuario_db)
     return usuario_db
+
 
 def activate_usuario(db: Session, user_id: int):
     usuario_db = db.query(Usuario).filter(Usuario.id == user_id).first()
     if not usuario_db:
         return None
-    usuario_db.status = 1  # ACTIVO
+    usuario_db.status = True  # ACTIVO
     db.commit()
     db.refresh(usuario_db)
     return usuario_db
+
 
 def login_usuario(db: Session, username: str, password: str):
     usuario = get_usuario_by_username(db, username)
@@ -102,7 +115,7 @@ def login_usuario(db: Session, username: str, password: str):
     if not check_password_hash(usuario.password, password):
         raise ValueError("Contraseña incorrecta")
 
-    if usuario.status != 1:
+    if usuario.status != True:
         raise ValueError("Usuario no está activo")
 
     rol_nombre = usuario.rol.nombre if usuario.rol else None
@@ -111,5 +124,5 @@ def login_usuario(db: Session, username: str, password: str):
         "id": usuario.id,
         "username": usuario.username,
         "role_id": usuario.rol_id,
-        "rol_name": rol_nombre
+        "rol_name": rol_nombre,
     }

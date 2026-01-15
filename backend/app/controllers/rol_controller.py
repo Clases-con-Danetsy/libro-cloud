@@ -7,17 +7,14 @@ from app.crud.rol import (
     get_role_by_name,
     delete_role,
     activate_role,
-    update_role
+    update_role,
 )
 
 router = APIRouter(prefix="/roles", tags=["Roles"])
 
 
 @router.post("/")
-def create_new_role(
-    nombre: str = Body(..., embed=True),
-    db: Session = Depends(get_db)
-):
+def create_new_role(nombre: str = Body(..., embed=True), db: Session = Depends(get_db)):
     db_role = get_role_by_name(db, nombre=nombre)
     if db_role:
         raise HTTPException(status_code=400, detail="Role already exists")
@@ -27,9 +24,9 @@ def create_new_role(
     return {
         "id": role.id,
         "nombre": role.nombre,
-        "is_active": role.is_active,
+        "status": role.status,
         "created_at": role.created_at,
-        "updated_at": role.updated_at
+        "updated_at": role.updated_at,
     }
 
 
@@ -40,9 +37,9 @@ def read_roles(db: Session = Depends(get_db)):
         {
             "id": r.id,
             "nombre": r.nombre,
-            "is_active": r.is_active,
+            "status": r.status,
             "created_at": r.created_at,
-            "updated_at": r.updated_at
+            "updated_at": r.updated_at,
         }
         for r in roles
     ]
@@ -57,7 +54,7 @@ def delete_role_endpoint(rol_id: int, db: Session = Depends(get_db)):
     return {
         "message": "Role deactivated successfully",
         "id": deleted_role.id,
-        "is_active": deleted_role.is_active
+        "status": deleted_role.status,
     }
 
 
@@ -70,7 +67,7 @@ def activate_role_endpoint(rol_id: int, db: Session = Depends(get_db)):
     return {
         "message": "Role activated successfully",
         "id": activated_role.id,
-        "is_active": activated_role.is_active
+        "status": activated_role.status,
     }
 
 
@@ -78,15 +75,10 @@ def activate_role_endpoint(rol_id: int, db: Session = Depends(get_db)):
 def update_existing_role(
     rol_id: int,
     nombre: str = Body(None, embed=True),
-    is_active: int = Body(None, embed=True),
-    db: Session = Depends(get_db)
+    status: bool = Body(None, embed=True),
+    db: Session = Depends(get_db),
 ):
-    updated_role = update_role(
-        db=db,
-        rol_id=rol_id,
-        nombre=nombre,
-        is_active=is_active
-    )
+    updated_role = update_role(db=db, rol_id=rol_id, nombre=nombre, status=status)
 
     if not updated_role:
         raise HTTPException(status_code=404, detail="Role not found")
@@ -94,7 +86,7 @@ def update_existing_role(
     return {
         "id": updated_role.id,
         "nombre": updated_role.nombre,
-        "is_active": updated_role.is_active,
+        "status": updated_role.status,
         "created_at": updated_role.created_at,
-        "updated_at": updated_role.updated_at
+        "updated_at": updated_role.updated_at,
     }
