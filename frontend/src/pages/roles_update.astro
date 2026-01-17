@@ -1,0 +1,110 @@
+---
+import MainLayout from "../layouts/MainLayout.astro";
+import Sidebar from "../components/Sidebar.astro";
+import Menu from "../components/Menu.astro";
+---
+
+<MainLayout title="Editar Rol">
+  <div class="flex min-h-screen bg-gray-100">
+    <Sidebar />
+
+    <div class="flex-1 flex flex-col">
+      <Menu />
+
+      <main class="flex-1 p-10">
+        <div class="max-w-xl mx-auto bg-white shadow-md rounded-lg p-8">
+          <h1 class="text-2xl font-bold mb-6">Editar Rol</h1>
+
+          <form id="rol-form" class="space-y-6">
+            <!-- Nombre -->
+            <div>
+              <label class="block text-sm font-medium mb-1">Nombre</label>
+              <input
+                id="nombre"
+                type="text"
+                class="w-full border rounded-md px-3 py-2"
+                required
+              />
+            </div>
+
+            <!-- Estado -->
+            <div class="flex items-center gap-2">
+              <input id="status" type="checkbox" />
+              <label for="status" class="text-sm">Activo</label>
+            </div>
+
+            <!-- Botones -->
+            <div class="flex gap-4">
+              <button
+                type="submit"
+                class="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700"
+              >
+                Guardar cambios
+              </button>
+
+              <a
+                href="/roles"
+                class="px-4 py-2 rounded-md border border-gray-300 hover:bg-gray-100"
+              >
+                Cancelar
+              </a>
+            </div>
+          </form>
+        </div>
+      </main>
+    </div>
+  </div>
+</MainLayout>
+
+<script is:inline>
+  // 🔹 obtener ID desde la URL
+  const params = new URLSearchParams(window.location.search);
+  const rolId = params.get("id");
+
+  if (!rolId) {
+    alert("ID de rol no encontrado");
+    window.location.href = "/roles";
+  }
+
+  const nombreInput = document.getElementById("nombre");
+  const statusInput = document.getElementById("status");
+  const form = document.getElementById("rol-form");
+
+  // 🔹 cargar datos del rol por ID
+  async function loadRol() {
+    const res = await fetch(`http://localhost:8000/roles/${rolId}`);
+    if (!res.ok) {
+      alert("No se pudo cargar el rol");
+      return;
+    }
+
+    const rol = await res.json();
+    nombreInput.value = rol.nombre;
+    statusInput.checked = rol.status;
+  }
+
+  // 🔹 enviar actualización
+  form.addEventListener("submit", async (e) => {
+    e.preventDefault();
+
+    const res = await fetch(`http://localhost:8000/roles/${rolId}`, {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        nombre: nombreInput.value,
+        status: statusInput.checked,
+      }),
+    });
+
+    if (res.ok) {
+      alert("Rol actualizado correctamente");
+      window.location.href = "/roles";
+    } else {
+      alert("Error al actualizar el rol");
+    }
+  });
+
+  loadRol();
+</script>
