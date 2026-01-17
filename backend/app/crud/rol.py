@@ -10,6 +10,10 @@ def get_role_by_name(db: Session, nombre: str):
     return db.query(Rol).filter(Rol.nombre == nombre).first()
 
 
+def get_role_by_id(db: Session, id: int):
+    return db.query(Rol).filter(Rol.id == id).first()
+
+
 def create_role(db: Session, nombre: str):
     db_role = Rol(nombre=nombre, status=True)
     db.add(db_role)

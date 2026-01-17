@@ -27,12 +27,6 @@ import Menu from "../components/Menu.astro";
               />
             </div>
 
-            <!-- Estado -->
-            <div class="flex items-center gap-2">
-              <input id="status" type="checkbox" />
-              <label for="status" class="text-sm">Activo</label>
-            </div>
-
             <!-- Botones -->
             <div class="flex gap-4">
               <button
@@ -67,7 +61,6 @@ import Menu from "../components/Menu.astro";
   }
 
   const nombreInput = document.getElementById("nombre");
-  const statusInput = document.getElementById("status");
   const form = document.getElementById("rol-form");
 
   // 🔹 cargar datos del rol por ID
@@ -80,7 +73,6 @@ import Menu from "../components/Menu.astro";
 
     const rol = await res.json();
     nombreInput.value = rol.nombre;
-    statusInput.checked = rol.status;
   }
 
   // 🔹 enviar actualización
@@ -94,7 +86,6 @@ import Menu from "../components/Menu.astro";
       },
       body: JSON.stringify({
         nombre: nombreInput.value,
-        status: statusInput.checked,
       }),
     });
 

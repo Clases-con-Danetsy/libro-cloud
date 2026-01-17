@@ -8,6 +8,7 @@ from app.crud.usuario import (
     delete_usuario,
     activate_usuario,
     login_usuario,
+    get_usuario_by_id,
 )
 from app.models import Usuario, Rol
 
@@ -68,6 +69,21 @@ def read_users(db: Session = Depends(get_db)):
         }
         for r in results
     ]
+
+
+@users_router.get("/{user_id}")
+def read_user_by_id(user_id: int, db: Session = Depends(get_db)):
+    user = get_usuario_by_id(db, user_id)
+    if not user:
+        raise HTTPException(status_code=404, detail="Usuario no encontrado")
+    return {
+        "id": user.id,
+        "username": user.username,
+        "rol_id": user.rol_id,
+        "status": user.status,
+        "created_at": user.created_at,
+        "updated_at": user.updated_at,
+    }
 
 
 @users_router.put("/{user_id}")

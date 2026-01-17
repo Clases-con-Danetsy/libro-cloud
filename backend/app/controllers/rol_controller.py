@@ -8,6 +8,7 @@ from app.crud.rol import (
     delete_role,
     activate_role,
     update_role,
+    get_role_by_id,
 )
 
 router = APIRouter(prefix="/roles", tags=["Roles"])
@@ -43,6 +44,20 @@ def read_roles(db: Session = Depends(get_db)):
         }
         for r in roles
     ]
+
+
+@router.get("/{rol_id}")
+def read_role_by_id(rol_id: int, db: Session = Depends(get_db)):
+    role = get_role_by_id(db, rol_id)
+    if not role:
+        raise HTTPException(status_code=404, detail="Role not found")
+    return {
+        "id": role.id,
+        "nombre": role.nombre,
+        "status": role.status,
+        "created_at": role.created_at,
+        "updated_at": role.updated_at,
+    }
 
 
 @router.delete("/{rol_id}")

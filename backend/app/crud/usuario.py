@@ -57,6 +57,10 @@ def get_usuario_by_username(db: Session, username: str):
     return db.query(Usuario).filter(Usuario.username == username).first()
 
 
+def get_usuario_by_id(db: Session, id: int):
+    return db.query(Usuario).filter(Usuario.id == id).first()
+
+
 def update_usuario(
     db: Session,
     user_id: int,
