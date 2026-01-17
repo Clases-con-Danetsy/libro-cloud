@@ -3,6 +3,7 @@ import Layout from "../layouts/layout.astro";
 import Menu from "../components/menu.astro";
 import Sidebar from "../components/sidebar.astro";
 import ModalAlerta from "../components/modalAlerta.astro";
+import Button from "@/components/button.astro";
 ---
 
 <Layout title="Usuarios">
@@ -11,6 +12,16 @@ import ModalAlerta from "../components/modalAlerta.astro";
     <Sidebar />
     <div class="flex-1 p-6">
       <h1 class="text-2xl font-bold mb-4">Usuarios</h1>
+      <div class="flex gap-3">
+        <Button type="submit" variant="default" size="default" id="btnGuardar">
+          Crear Usuario
+        </Button>
+        <a href="/usuarios">
+          <Button type="button" variant="outline" size="default">
+            Cancelar
+          </Button>
+        </a>
+      </div>
       <div
         id="errorMessage"
         class="hidden text-sm text-center p-2 rounded mb-4"
@@ -138,7 +149,7 @@ import ModalAlerta from "../components/modalAlerta.astro";
           row.classList.add(
             "border-b",
             "hover:bg-gray-50",
-            "transition-colors"
+            "transition-colors",
           );
 
           // Alterna colores de fila

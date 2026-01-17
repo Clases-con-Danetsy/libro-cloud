@@ -3,18 +3,19 @@ import Layout from "../layouts/layout.astro";
 import Menu from "../components/menu.astro";
 import Sidebar from "../components/sidebar.astro";
 import ModalAlerta from "../components/modalAlerta.astro";
+import Button from "@/components/button.astro";
 ---
 
 <Layout title="Roles">
   <Menu />
   <div class="flex flex-row gap-4">
     <Sidebar />
-    <div class="flex-1 p-6">
+    <div class="flex-1 relative p-6">
       <h1 class="text-2xl font-bold mb-4">Roles</h1>
-      <div
-        id="errorMessage"
-        class="hidden text-sm text-center p-2 rounded mb-4"
-      >
+      <div class="absolute top-4 right-6 flex justify-end">
+        <a href="./rol_nuevo">
+          <Button variant="default" size="sm"> Nuevo Rol </Button>
+        </a>
       </div>
       <ModalAlerta>
         <slot>Estas seguro de eliminar este rol?</slot>
@@ -136,7 +137,7 @@ import ModalAlerta from "../components/modalAlerta.astro";
           row.classList.add(
             "border-b",
             "hover:bg-gray-50",
-            "transition-colors"
+            "transition-colors",
           );
 
           // Alterna colores de fila
