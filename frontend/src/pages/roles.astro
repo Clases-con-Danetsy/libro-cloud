@@ -13,6 +13,17 @@ import Menu from "../components/Menu.astro";
 
       <main class="flex-1 p-10">
         <div class="max-w-6xl mx-auto">
+
+          <!-- 🔹 BOTÓN AGREGAR ROL -->
+          <div class="flex justify-end mb-4">
+            <a
+              href="/roles_create"
+              class="bg-pink-500 text-white px-5 py-2 rounded-full hover:bg-pink-600 transition"
+            >
+              + Agregar Rol
+            </a>
+          </div>
+
           <h1 class="text-3xl font-bold mb-8">Roles</h1>
 
           <div class="bg-white shadow-md rounded-lg overflow-hidden">
@@ -34,9 +45,51 @@ import Menu from "../components/Menu.astro";
       </main>
     </div>
   </div>
+
+  <div
+    id="confirm-modal"
+    class="fixed inset-0 hidden items-center justify-center z-50 bg-black/40 backdrop-blur-sm"
+  >
+    <div class="bg-white rounded-2xl shadow-xl w-full max-w-md p-8">
+      <div class="flex items-center gap-3 mb-4">
+        <div class="w-10 h-10 rounded-full bg-pink-100 flex items-center justify-center">
+          <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6 text-pink-500"
+            fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M13 16h-1v-4h-1m1-4h.01M12 18a6 6 0 100-12 6 6 0 000 12z" />
+          </svg>
+        </div>
+        <h2 class="text-xl font-semibold text-gray-800">
+          Confirmar acción
+        </h2>
+      </div>
+
+      <p class="text-gray-600 mb-8 leading-relaxed">
+        ¿Estás seguro de que deseas desactivar este rol?
+      </p>
+
+      <div class="flex justify-end gap-3">
+        <button
+          onclick="closeModal()"
+          class="px-5 py-2 rounded-full border border-gray-300 text-gray-600 hover:bg-gray-100 transition"
+        >
+          Cancelar
+        </button>
+
+        <button
+          onclick="confirmDeactivate()"
+          class="px-5 py-2 rounded-full bg-pink-500 text-white hover:bg-pink-600 transition"
+        >
+          Desactivar
+        </button>
+      </div>
+    </div>
+  </div>
 </MainLayout>
 
 <script is:inline>
+  let roleToDeactivate = null;
+
   function formatDate(dateString) {
     if (!dateString) return "";
     const date = new Date(dateString);
@@ -58,8 +111,28 @@ import Menu from "../components/Menu.astro";
     loadRoles();
   }
 
-  async function deactivateRole(id) {
-    await fetch(`http://localhost:8000/roles/${id}`, { method: "DELETE" });
+  function deactivateRole(id) {
+    roleToDeactivate = id;
+    const modal = document.getElementById("confirm-modal");
+    modal.classList.remove("hidden");
+    modal.classList.add("flex");
+  }
+
+  function closeModal() {
+    roleToDeactivate = null;
+    const modal = document.getElementById("confirm-modal");
+    modal.classList.add("hidden");
+    modal.classList.remove("flex");
+  }
+
+  async function confirmDeactivate() {
+    if (!roleToDeactivate) return;
+
+    await fetch(`http://localhost:8000/roles/${roleToDeactivate}`, {
+      method: "DELETE",
+    });
+
+    closeModal();
     loadRoles();
   }
 
@@ -92,12 +165,8 @@ import Menu from "../components/Menu.astro";
           <td class="px-5 py-4 border-b">
             <div class="flex gap-4 items-center">
 
-              <!-- ✏️ LÁPIZ CORRECTO (MISMO QUE ANTES) -->
-              <span
-                onclick="editRole(${r.id})"
-                class="cursor-pointer text-blue-600 hover:text-blue-800"
-                title="Editar"
-              >
+              <span onclick="editRole(${r.id})"
+                class="cursor-pointer text-blue-600 hover:text-blue-800">
                 <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6"
                   fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -105,12 +174,8 @@ import Menu from "../components/Menu.astro";
                 </svg>
               </span>
 
-              <!-- ✅ ACTIVAR -->
-              <span
-                onclick="activateRole(${r.id})"
-                class="cursor-pointer text-green-600 hover:text-green-800"
-                title="Activar"
-              >
+              <span onclick="activateRole(${r.id})"
+                class="cursor-pointer text-green-600 hover:text-green-800">
                 <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6"
                   fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -118,12 +183,8 @@ import Menu from "../components/Menu.astro";
                 </svg>
               </span>
 
-              <!-- ❌ DESACTIVAR -->
-              <span
-                onclick="deactivateRole(${r.id})"
-                class="cursor-pointer text-red-600 hover:text-red-800"
-                title="Desactivar"
-              >
+              <span onclick="deactivateRole(${r.id})"
+                class="cursor-pointer text-red-600 hover:text-red-800">
                 <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6"
                   fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
