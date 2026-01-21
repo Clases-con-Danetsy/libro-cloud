@@ -1,6 +1,7 @@
 from fastapi import APIRouter, Depends, Query, Path
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, aliased
 from app.database import get_db
+from app.models import Roles, Usuario
 from app.crud import (
     crear_rol,
     obtener_roles,
@@ -15,7 +16,16 @@ router = APIRouter(prefix="/rol", tags=["Roles"])
 
 @router.get("/get")
 def listar_roles(db: Session = Depends(get_db)):
-    roles = obtener_roles(db)
+    UserCreate = aliased(Usuario)
+    UserUpdate = aliased(Usuario)
+
+    data = (
+        db.query(Roles, UserCreate.username, UserUpdate.username)
+        .outerjoin(UserCreate, UserCreate.id == Roles.who_create)
+        .outerjoin(UserUpdate, UserUpdate.id == Roles.who_update)
+        .all()
+    )
+
     return [
         {
             "id": r.id,
@@ -23,8 +33,10 @@ def listar_roles(db: Session = Depends(get_db)):
             "status": r.status,
             "created_at": r.created_at.isoformat(),
             "updated_at": r.updated_at.isoformat(),
+            "who_create": created_by,
+            "who_update": updated_by,
         }
-        for r in roles
+        for r, created_by, updated_by in data
     ]
 
 
@@ -44,8 +56,13 @@ def obtener_rol_by_id_endpoint(
 
 
 @router.post("/create")
-def crear_rol_endpoint(db: Session = Depends(get_db), rol_name: str = Query(...)):
-    mensaje = crear_rol(db, rol_name)
+def crear_rol_endpoint(
+    db: Session = Depends(get_db),
+    rol_name: str = Query(...),
+    who_create: int = Query(...),
+    who_update: int = Query(...),
+):
+    mensaje = crear_rol(db, rol_name, who_create, who_update)
     return {"mensaje": mensaje}
 
 
@@ -54,8 +71,9 @@ def actualizar_rol(
     db: Session = Depends(get_db),
     id: int = Query(...),
     new_rol_name: str = Query(...),
+    who_update: int = Query(...),
 ):
-    mensaje = update_rol(db, id, new_rol_name)
+    mensaje = update_rol(db, id, new_rol_name, who_update)
     return {"mensaje": mensaje}
 
 

@@ -9,13 +9,18 @@ def crear_rol_inicial(db: Session):
         return
 
     nuevo = Roles(
-        rol_name="admin", status=1, created_at=datetime.now(), updated_at=datetime.now()
+        rol_name="admin",
+        status=1,
+        created_at=datetime.now(),
+        updated_at=datetime.now(),
+        who_create=1,
+        who_update=1,
     )
     db.add(nuevo)
     db.commit()
 
 
-def crear_rol(db: Session, rol_name: str):
+def crear_rol(db: Session, rol_name: str, who_create: int, who_update: int):
     existe = db.query(Roles).filter(Roles.rol_name == rol_name).first()
     if existe:
         return
@@ -23,6 +28,8 @@ def crear_rol(db: Session, rol_name: str):
     nuevo = Roles(
         rol_name=rol_name,
         status=1,
+        who_create=who_create,
+        who_update=who_update,
         created_at=datetime.now(),
         updated_at=datetime.now(),
     )
@@ -31,11 +38,12 @@ def crear_rol(db: Session, rol_name: str):
     return "Rol creado correctamente"
 
 
-def update_rol(db: Session, id: int, new_rol_name: str):
+def update_rol(db: Session, id: int, new_rol_name: str, who_update: int):
     rol = db.query(Roles).filter(Roles.id == id).first()
     if rol:
         rol.rol_name = new_rol_name
         rol.updated_at = datetime.now()
+        rol.who_update = who_update
         db.add(rol)
         db.commit()
     return "Rol actualizado correctamente"

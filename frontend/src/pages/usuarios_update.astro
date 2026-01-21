@@ -47,6 +47,7 @@ import Sidebar from "../components/sidebar.astro";
 <script is:inline>
   const params = new URLSearchParams(window.location.search);
   const usuarioId = params.get("id");
+  const user = JSON.parse(localStorage.getItem("user"));
 
   let originalUsuario = null;
   let roles = [];
@@ -100,6 +101,7 @@ import Sidebar from "../components/sidebar.astro";
       url.searchParams.set("id", usuarioId);
       url.searchParams.set("new_username", finalUsuarioName);
       url.searchParams.set("new_rol", selectedRolId);
+      url.searchParams.set("who_update", user.id);
 
       try {
         const response = await fetch(url.toString(), {

@@ -1,6 +1,7 @@
 from fastapi import APIRouter, Depends, Query, Path
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, aliased
 from app.database import get_db
+from app.models import Usuario, Roles
 from app.crud import (
     crear_usuario,
     obtener_usuarios,
@@ -17,21 +18,34 @@ router = APIRouter(prefix="/user", tags=["Usuarios"])
 
 @router.get("/get")
 def listar_usuarios(db: Session = Depends(get_db)):
-    usuarios = obtener_usuarios(db)
-    roles = obtener_roles(db)
-    # Crear un diccionario de roles para búsqueda rápida
-    roles_dict = {r.id: r.rol_name for r in roles}
+    UserCreate = aliased(Usuario)
+    UserUpdate = aliased(Usuario)
+
+    data = (
+        db.query(
+            Usuario,
+            UserCreate.username.label("created_by"),
+            UserUpdate.username.label("updated_by"),
+            Roles.rol_name.label("rol_name"),
+        )
+        .outerjoin(UserCreate, UserCreate.id == Usuario.who_create)
+        .outerjoin(UserUpdate, UserUpdate.id == Usuario.who_update)
+        .outerjoin(Roles, Roles.id == Usuario.rol)
+        .all()
+    )
 
     return [
         {
             "id": u.id,
             "username": u.username,
-            "rol": roles_dict.get(u.rol, "Sin rol"),
+            "rol": rol_name,
             "status": u.status,
             "created_at": u.created_at.isoformat(),
             "updated_at": u.updated_at.isoformat(),
+            "who_create": created_by,
+            "who_update": updated_by,
         }
-        for u in usuarios
+        for u, created_by, updated_by, rol_name in data
     ]
 
 
@@ -56,9 +70,18 @@ def crear_usuario_endpoint(
     db: Session = Depends(get_db),
     username: str = Query(...),
     password: str = Query(...),
+    who_create: int = Query(...),
+    who_update: int = Query(...),
     rol: int = Query(...),
 ):
-    mensaje = crear_usuario(db, username=username, password=password, rol=rol)
+    mensaje = crear_usuario(
+        db,
+        username=username,
+        password=password,
+        who_create=who_create,
+        who_update=who_update,
+        rol=rol,
+    )
     return {"mensaje": mensaje}
 
 
@@ -68,8 +91,11 @@ def actualizar_usuario(
     id: int = Query(...),
     new_username: str = Query(...),
     new_rol: int = Query(...),
+    who_update: int = Query(...),
 ):
-    mensaje = update_usuario(db, id=id, new_username=new_username, new_rol=new_rol)
+    mensaje = update_usuario(
+        db, id=id, new_username=new_username, new_rol=new_rol, who_update=who_update
+    )
     return {"mensaje": mensaje}
 
 
@@ -103,5 +129,5 @@ def login(
     return {
         "success": True,
         "message": "Login exitoso",
-        "user": {"username": usuario.username, "rol": rol_name},
+        "user": {"username": usuario.username, "rol": rol_name, "id": usuario.id},
     }

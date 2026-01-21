@@ -10,22 +10,12 @@ import Button from "@/components/button.astro";
   <Menu />
   <div class="flex flex-row gap-4">
     <Sidebar />
-    <div class="flex-1 p-6">
+    <div class="flex-1 relative p-6">
       <h1 class="text-2xl font-bold mb-4">Usuarios</h1>
-      <div class="flex gap-3">
-        <Button type="submit" variant="default" size="default" id="btnGuardar">
-          Crear Usuario
-        </Button>
-        <a href="/usuarios">
-          <Button type="button" variant="outline" size="default">
-            Cancelar
-          </Button>
+      <div class="absolute top-4 right-6 flex justify-end">
+        <a href="./usuario_nuevo">
+          <Button variant="default" size="sm"> Nuevo Usuario </Button>
         </a>
-      </div>
-      <div
-        id="errorMessage"
-        class="hidden text-sm text-center p-2 rounded mb-4"
-      >
       </div>
       <ModalAlerta>
         <slot>Estas seguro de eliminar este usuario?</slot>
@@ -56,6 +46,14 @@ import Button from "@/components/button.astro";
               <th
                 class="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider"
                 >Última Actualización</th
+              >
+              <th
+                class="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider"
+                >Quien Creó</th
+              >
+              <th
+                class="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider"
+                >Quien Actualizó</th
               >
               <th
                 class="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider"
@@ -173,6 +171,8 @@ import Button from "@/components/button.astro";
             </td>
             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${formatDate(Usuario.created_at)}</td>
             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${formatDate(Usuario.updated_at)}</td>
+            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${Usuario.who_create}</td>
+            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${Usuario.who_update}</td>
             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
               <button onclick="editUsuario(${Usuario.id})" class="pr-8 py-2 cursor-pointer rounded-md"><img class="w-5 h-5" src=${edit}></button>
               <button onclick="deleteUsuario(${Usuario.id})" class="pr-8 py-2 cursor-pointer rounded-md"><img class="w-5 h-5" src=${trash}></button>

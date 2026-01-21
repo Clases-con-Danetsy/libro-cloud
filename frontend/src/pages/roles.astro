@@ -45,6 +45,14 @@ import Button from "@/components/button.astro";
               >
               <th
                 class="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider"
+                >Quien Creó</th
+              >
+              <th
+                class="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider"
+                >Quien Actualizó</th
+              >
+              <th
+                class="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider"
                 >Acciones</th
               >
             </tr>
@@ -160,6 +168,8 @@ import Button from "@/components/button.astro";
             </td>
             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${formatDate(rol.created_at)}</td>
             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${formatDate(rol.updated_at)}</td>
+            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${rol.who_create}</td>
+            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${rol.who_update}</td>
             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
               <button onclick="editRol(${rol.id})" class="pr-8 py-2 cursor-pointer rounded-md"><img class="w-5 h-5" src=${edit}></button>
               <button onclick="deleteRol(${rol.id})" class="pr-8 py-2 cursor-pointer rounded-md"><img class="w-5 h-5" src=${trash}></button>

@@ -5,14 +5,6 @@ import Sidebar from "../components/sidebar.astro";
 import Button from "@/components/button.astro";
 ---
 
-<div class="flex gap-3">
-  <Button type="submit" variant="default" size="default" id="btnGuardar">
-    Crear Rol
-  </Button>
-  <a href="/roles">
-    <Button type="button" variant="outline" size="default"> Cancelar </Button>
-  </a>
-</div>
 <Layout title="Nuevo Usuario">
   <Menu />
   <div class="flex flex-row gap-4">
@@ -35,7 +27,28 @@ import Button from "@/components/button.astro";
               placeholder="Ej: Administrador, Usuario, Editor..."
             />
           </div>
-
+          <div>
+            <label
+              for="Usuario_password"
+              class="block text-sm font-medium mb-2"
+            >
+              Contraseña del Usuario <span class="text-red-500">*</span>
+            </label>
+            <input
+              type="password"
+              id="Usuario_password"
+              name="Usuario_password"
+              required
+              class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              placeholder="Ej: awdkh87a6wd888"
+            />
+          </div>
+          <div>
+            <label class="block text-sm font-medium">Rol</label>
+            <select id="Usuario_rol" class="w-full border rounded px-3 py-2">
+              <option value="">Selecciona un rol</option>
+            </select>
+          </div>
           <div
             id="errorMessage"
             class="hidden bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded"
@@ -57,7 +70,7 @@ import Button from "@/components/button.astro";
             >
               Crear Usuario
             </Button>
-            <a href="/Usuarioes">
+            <a href="/usuarios">
               <Button type="button" variant="outline" size="default">
                 Cancelar
               </Button>
@@ -69,76 +82,106 @@ import Button from "@/components/button.astro";
   </div>
 </Layout>
 
-<script>
+<script type="module">
   import { navigate } from "astro:transitions/client";
 
-  const form = document.getElementById("formUsuario") as HTMLFormElement;
+  const form = document.getElementById("formUsuario");
   const errorMessage = document.getElementById("errorMessage");
   const successMessage = document.getElementById("successMessage");
   const btnGuardar = document.getElementById("btnGuardar");
+  const rolSelect = document.getElementById("Usuario_rol");
 
-  form?.addEventListener("submit", async (e) => {
+  let roles = [];
+
+  const userStr = localStorage.getItem("user");
+  const user = userStr ? JSON.parse(userStr) : null;
+
+  if (!user) {
+    navigate("/login");
+  }
+
+  async function getRoles() {
+    const res = await fetch("http://127.0.0.1:8000/rol/get");
+    roles = await res.json();
+
+    rolSelect.innerHTML = `<option value="">Selecciona un rol</option>`;
+
+    roles.forEach((rol) => {
+      const option = document.createElement("option");
+      option.value = rol.id;
+      option.textContent = rol.rol_name;
+      rolSelect.appendChild(option);
+    });
+  }
+
+  getRoles();
+
+  form.addEventListener("submit", async (e) => {
     e.preventDefault();
 
-    // Limpiar mensajes previos
-    errorMessage?.classList.add("hidden");
-    successMessage?.classList.add("hidden");
+    errorMessage.classList.add("hidden");
+    successMessage.classList.add("hidden");
 
     const formData = new FormData(form);
-    const UsuarioName = formData.get("Usuario_name") as string;
+    const username = formData.get("Usuario_name");
+    const password = formData.get("Usuario_password");
+    const rolId = formData.get("Usuario_rol");
 
-    if (!UsuarioName || UsuarioName.trim() === "") {
-      if (errorMessage) {
-        errorMessage.textContent = "El nombre del Usuario es obligatorio";
-        errorMessage.classList.remove("hidden");
-      }
+    if (!username || !username.toString().trim()) {
+      errorMessage.textContent = "El nombre del usuario es obligatorio";
+      errorMessage.classList.remove("hidden");
+      return;
+    }
+
+    if (!password) {
+      errorMessage.textContent = "La contraseña es obligatoria";
+      errorMessage.classList.remove("hidden");
+      return;
+    }
+
+    if (!rolId) {
+      errorMessage.textContent = "Selecciona un rol";
+      errorMessage.classList.remove("hidden");
       return;
     }
 
     try {
-      // Deshabilitar botón mientras se envía
-      if (btnGuardar) {
-        btnGuardar.setAttribute("disabled", "true");
-        btnGuardar.textContent = "Guardando...";
-      }
+      btnGuardar.disabled = true;
+      btnGuardar.textContent = "Guardando...";
 
-      const response = await fetch(
-        `http://127.0.0.1:8000/Usuario/create?Usuario_name=${encodeURIComponent(UsuarioName)}`,
-        {
-          method: "POST",
-          headers: {
-            accept: "application/json",
-          },
+      const response = await fetch("http://127.0.0.1:8000/usuarios/create", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          accept: "application/json",
         },
-      );
+        body: JSON.stringify({
+          username,
+          password,
+          rol_id: rolId,
+          who_create: user.id,
+          who_update: user.id,
+        }),
+      });
 
       const data = await response.json();
 
-      if (response.ok) {
-        if (successMessage) {
-          successMessage.textContent =
-            data.mensaje || "Usuario creado correctamente";
-          successMessage.classList.remove("hidden");
-        }
-
-        setTimeout(() => {
-          navigate("/Usuarioes");
-        }, 1500);
-      } else {
-        throw new Error(data.detail || "Error al crear el Usuario");
-      }
-    } catch (error) {
-      console.error("Error:", error);
-      if (errorMessage) {
-        errorMessage.textContent =
-          error instanceof Error ? error.message : "Error al crear el Usuario";
-        errorMessage.classList.remove("hidden");
+      if (!response.ok) {
+        throw new Error(data.detail || "Error al crear el usuario");
       }
 
-      if (btnGuardar) {
-        btnGuardar.removeAttribute("disabled");
-        btnGuardar.textContent = "Crear Usuario";
-      }
+      successMessage.textContent =
+        data.mensaje || "Usuario creado correctamente";
+      successMessage.classList.remove("hidden");
+
+      setTimeout(() => navigate("/usuarios"), 1500);
+    } catch (err) {
+      errorMessage.textContent =
+        err instanceof Error ? err.message : "Error inesperado";
+      errorMessage.classList.remove("hidden");
+    } finally {
+      btnGuardar.disabled = false;
+      btnGuardar.textContent = "Crear Usuario";
     }
   });
 </script>

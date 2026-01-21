@@ -16,12 +16,21 @@ def crear_usuario_inicial(db: Session):
         status=1,
         created_at=datetime.now(),
         updated_at=datetime.now(),
+        who_create=1,
+        who_update=1,
     )
     db.add(nuevo)
     db.commit()
 
 
-def crear_usuario(db: Session, username: str, password: str, rol: int):
+def crear_usuario(
+    db: Session,
+    username: str,
+    password: str,
+    who_create: int,
+    who_update: int,
+    rol: int,
+):
     existe = db.query(Usuario).filter(Usuario.username == username).first()
     if existe:
         return "El usuario ya existe"
@@ -38,6 +47,8 @@ def crear_usuario(db: Session, username: str, password: str, rol: int):
         status=1,
         created_at=datetime.now(),
         updated_at=datetime.now(),
+        who_create=who_create,
+        who_update=who_update,
     )
     db.add(nuevo)
     db.commit()
@@ -52,7 +63,9 @@ def obtener_usuario_by_id(db: Session, id: int):
     return db.query(Usuario).filter(Usuario.id == id).first()
 
 
-def update_usuario(db: Session, id: str, new_username: str, new_rol: int):
+def update_usuario(
+    db: Session, id: str, new_username: str, new_rol: int, who_update: int
+):
     usuario = db.query(Usuario).filter(Usuario.id == id).first()
     if usuario:
         rol_obj = db.query(Roles).filter(Roles.id == new_rol).first()
@@ -63,6 +76,7 @@ def update_usuario(db: Session, id: str, new_username: str, new_rol: int):
         usuario.username = new_username
         usuario.updated_at = datetime.now()
         usuario.rol = new_rol
+        usuario.who_update = who_update
         db.add(usuario)
         db.commit()
     return "Usuario actualizado correctamente"
