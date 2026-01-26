@@ -51,7 +51,6 @@ import Menu from "../components/Menu.astro";
 </MainLayout>
 
 <script is:inline>
-  // 🔹 obtener ID desde la URL
   const params = new URLSearchParams(window.location.search);
   const rolId = params.get("id");
 
@@ -63,7 +62,8 @@ import Menu from "../components/Menu.astro";
   const nombreInput = document.getElementById("nombre");
   const form = document.getElementById("rol-form");
 
-  // 🔹 cargar datos del rol por ID
+  const usuarioActual = localStorage.getItem("username");
+
   async function loadRol() {
     const res = await fetch(`http://localhost:8000/roles/${rolId}`);
     if (!res.ok) {
@@ -75,7 +75,6 @@ import Menu from "../components/Menu.astro";
     nombreInput.value = rol.nombre;
   }
 
-  // 🔹 enviar actualización
   form.addEventListener("submit", async (e) => {
     e.preventDefault();
 
@@ -86,6 +85,7 @@ import Menu from "../components/Menu.astro";
       },
       body: JSON.stringify({
         nombre: nombreInput.value,
+        actualizado_por: usuarioActual, // 👈 NUEVO
       }),
     });
 

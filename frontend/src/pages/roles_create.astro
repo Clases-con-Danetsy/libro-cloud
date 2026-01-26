@@ -55,6 +55,8 @@ import Menu from "../components/Menu.astro";
   const form = document.getElementById("rol-form");
   const nombreInput = document.getElementById("nombre");
 
+  const usuarioActual = localStorage.getItem("username");
+
   form.addEventListener("submit", async (e) => {
     e.preventDefault();
 
@@ -65,6 +67,7 @@ import Menu from "../components/Menu.astro";
       },
       body: JSON.stringify({
         nombre: nombreInput.value,
+        creado_por: usuarioActual, // 👈 NUEVO
       }),
     });
 
