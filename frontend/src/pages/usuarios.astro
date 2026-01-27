@@ -137,8 +137,8 @@ import Menu from "../components/Menu.astro";
           <td class="px-5 py-4 border-b">${formatDate(u.created_at)}</td>
           <td class="px-5 py-4 border-b">${formatDate(u.updated_at)}</td>
 
-          <td class="px-5 py-4 border-b">${u.created_by_username ?? "-"}</td>
-          <td class="px-5 py-4 border-b">${u.updated_by_username ?? "-"}</td>
+          <td class="px-5 py-4 border-b">${u.created_by ?? "-"}</td>
+          <td class="px-5 py-4 border-b">${u.updated_by ?? "-"}</td>
 
           <td class="px-5 py-4 border-b">
             <span class="px-3 py-1 rounded-full text-xs font-semibold

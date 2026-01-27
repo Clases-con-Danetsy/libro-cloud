@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, Body, HTTPException
 from sqlalchemy.orm import Session
 from app.database import get_db
-from app.crud.usuario import (
+from app.repository.usuario import (
     create_usuario,
     get_usuario_by_username,
     update_usuario,
@@ -53,6 +53,8 @@ def read_users(db: Session = Depends(get_db)):
             Usuario.created_at,
             Usuario.updated_at,
             Rol.nombre.label("rol_name"),
+            Usuario.created_by,
+            Usuario.updated_by
         )
         .join(Rol)
         .all()
@@ -66,6 +68,8 @@ def read_users(db: Session = Depends(get_db)):
             "status": r.status,
             "created_at": r.created_at,
             "updated_at": r.updated_at,
+            "created_by": r.created_by,
+            "updated_by": r.updated_by
         }
         for r in results
     ]

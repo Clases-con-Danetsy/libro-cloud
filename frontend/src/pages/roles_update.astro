@@ -62,7 +62,8 @@ import Menu from "../components/Menu.astro";
   const nombreInput = document.getElementById("nombre");
   const form = document.getElementById("rol-form");
 
-  const usuarioActual = localStorage.getItem("username");
+  const usuarioActual = localStorage.getItem("user");
+  const usuarioActualId = JSON.parse(usuarioActual).id;
 
   async function loadRol() {
     const res = await fetch(`http://localhost:8000/roles/${rolId}`);
@@ -85,7 +86,7 @@ import Menu from "../components/Menu.astro";
       },
       body: JSON.stringify({
         nombre: nombreInput.value,
-        actualizado_por: usuarioActual, // 👈 NUEVO
+        user_id: usuarioActualId,
       }),
     });
 

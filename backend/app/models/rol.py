@@ -11,3 +11,5 @@ class Rol(Base):
     status = Column(Boolean, nullable=False, default=True)
     created_at = Column(DateTime, default=func.now())
     updated_at = Column(DateTime, default=func.now(), onupdate=func.now())
+    created_by = Column(Integer, nullable=False)
+    updated_by = Column(Integer, nullable=False)

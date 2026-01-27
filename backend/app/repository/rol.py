@@ -14,8 +14,8 @@ def get_role_by_id(db: Session, id: int):
     return db.query(Rol).filter(Rol.id == id).first()
 
 
-def create_role(db: Session, nombre: str):
-    db_role = Rol(nombre=nombre, status=True)
+def create_role(db: Session, nombre: str, created_by: int, updated_by: int):
+    db_role = Rol(nombre=nombre, status=True, created_by=created_by, updated_by=updated_by)
     db.add(db_role)
     db.commit()
     db.refresh(db_role)
@@ -42,7 +42,7 @@ def activate_role(db: Session, rol_id: int):
     return db_role
 
 
-def update_role(db: Session, rol_id: int, nombre: str = None, status: bool = None):
+def update_role(db: Session, rol_id: int, nombre: str = None, status: bool = None, updated_by: int = None):
     db_role = db.query(Rol).filter(Rol.id == rol_id).first()
     if not db_role:
         return None
@@ -52,6 +52,9 @@ def update_role(db: Session, rol_id: int, nombre: str = None, status: bool = Non
 
     if status is not None:
         db_role.status = status
+
+    if updated_by is not None:
+        db_role.updated_by = updated_by
 
     db.commit()
     db.refresh(db_role)

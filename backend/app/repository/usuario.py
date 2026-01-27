@@ -7,7 +7,7 @@ def crear_usuario_inicial(db: Session):
     # Ensure admin role exists first
     rol_admin = db.query(Rol).filter(Rol.nombre == "admin").first()
     if not rol_admin:
-        rol_admin = Rol(nombre="admin")
+        rol_admin = Rol(nombre="admin", status=True, created_by=1, updated_by=1)
         db.add(rol_admin)
         db.commit()
         db.refresh(rol_admin)
@@ -26,7 +26,9 @@ def crear_usuario_inicial(db: Session):
             username="test",
             password=password_hash,
             rol_id=rol_admin.id,
-            status=True,  # ACTIVO
+            status=True,
+            created_by=1,
+            updated_by=1
         )
         db.add(nuevo)
         db.commit()
