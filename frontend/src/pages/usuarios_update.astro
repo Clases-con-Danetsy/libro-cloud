@@ -71,6 +71,8 @@ import Menu from "../components/Menu.astro";
   const usernameInput = document.getElementById("username");
   const rolSelect = document.getElementById("rol");
   const form = document.getElementById("usuario-form");
+  const usuarioActual = localStorage.getItem("user");
+  const usuarioActualId = JSON.parse(usuarioActual).id;
 
   // 🔹 cargar roles
   async function loadRoles(selectedRolId) {
@@ -118,7 +120,8 @@ import Menu from "../components/Menu.astro";
       },
       body: JSON.stringify({
         username: usernameInput.value,
-        rol_id: Number(rolSelect.value), // 👈 SE MANDA ID
+        rol_id: Number(rolSelect.value),
+        user_id: usuarioActualId,
       }),
     });
 

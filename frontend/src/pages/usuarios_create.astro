@@ -80,6 +80,9 @@ import Menu from "../components/Menu.astro";
   const usernameInput = document.getElementById("username");
   const passwordInput = document.getElementById("password");
   const rolSelect = document.getElementById("rol");
+  const usuarioActual = localStorage.getItem("user");
+  const usuarioActualId = JSON.parse(usuarioActual).id;
+
 
   async function loadRoles() {
     const res = await fetch("http://localhost:8000/roles");
@@ -107,6 +110,9 @@ import Menu from "../components/Menu.astro";
         username: usernameInput.value,
         password: passwordInput.value,
         rol_id: Number(rolSelect.value),
+        user_id: usuarioActualId,
+        created_by: usuarioActualId,
+        updated_by: usuarioActualId,
       }),
     });
 
