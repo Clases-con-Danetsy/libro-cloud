@@ -11,6 +11,7 @@ from app.repository.usuario import (
     get_usuario_by_id,
 )
 from app.models import Usuario, Rol
+from app.repository.usuario import get_users_by_ids
 
 router = APIRouter()
 users_router = APIRouter(prefix="/usuarios", tags=["Usuarios"])
@@ -22,6 +23,8 @@ def create_new_user(
     password: str = Body(...),
     rol_id: int = Body(...),
     db: Session = Depends(get_db),
+    created_by: int = Body(...),
+    updated_by: int = Body(...)
 ):
     existing_user = get_usuario_by_username(db, username=username)
     if existing_user:
@@ -29,7 +32,8 @@ def create_new_user(
 
     try:
         usuario = create_usuario(
-            db=db, username=username, password=password, rol_id=rol_id
+            db=db, username=username, password=password, rol_id=rol_id,
+            created_by=created_by, updated_by=updated_by
         )
         return {
             "id": usuario.id,
@@ -38,6 +42,8 @@ def create_new_user(
             "status": usuario.status,
             "created_at": usuario.created_at,
             "updated_at": usuario.updated_at,
+            "created_by": usuario.created_by,
+            "updated_by": usuario.updated_by
         }
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
@@ -60,6 +66,19 @@ def read_users(db: Session = Depends(get_db)):
         .all()
     )
 
+    
+    user_ids = set()
+    for r in results:
+        if r.created_by:
+            user_ids.add(r.created_by)
+        if r.updated_by:
+            user_ids.add(r.updated_by)
+
+    # 2. traer usuarios relacionados
+    users = get_users_by_ids(db, list(user_ids))
+    user_map = {u.id: u.username for u in users}
+
+    # 3. responder con nombres
     return [
         {
             "id": r.id,
@@ -68,8 +87,8 @@ def read_users(db: Session = Depends(get_db)):
             "status": r.status,
             "created_at": r.created_at,
             "updated_at": r.updated_at,
-            "created_by": r.created_by,
-            "updated_by": r.updated_by
+            "created_by": user_map.get(r.created_by),
+            "updated_by": user_map.get(r.updated_by),
         }
         for r in results
     ]
@@ -97,10 +116,12 @@ def update_existing_user(
     rol_id: int = Body(None),
     status: bool = Body(None),
     db: Session = Depends(get_db),
+    updated_by: int = Body(...),
 ):
     try:
         updated_user = update_usuario(
-            db=db, user_id=user_id, username=username, rol_id=rol_id, status=status
+            db=db, user_id=user_id, username=username, rol_id=rol_id, status=status,
+            updated_by=updated_by
         )
 
         if not updated_user:
@@ -113,6 +134,8 @@ def update_existing_user(
             "status": updated_user.status,
             "created_at": updated_user.created_at,
             "updated_at": updated_user.updated_at,
+            "created_by": updated_user.created_by,
+            "updated_by": updated_user.updated_by,
         }
 
     except ValueError as e:

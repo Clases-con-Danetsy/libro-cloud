@@ -1,6 +1,7 @@
 from fastapi import APIRouter, Depends, Body, HTTPException
 from sqlalchemy.orm import Session
 from app.database import get_db
+from app.repository.usuario import get_users_by_ids  
 from app.repository.rol import (
     get_roles,
     create_role,
@@ -36,6 +37,17 @@ def create_new_role(nombre: str = Body(..., embed=True), user_id: int = Body(...
 @router.get("/")
 def read_roles(db: Session = Depends(get_db)):
     roles = get_roles(db)
+
+    user_ids = set()
+    for r in roles:
+        if r.created_by:
+            user_ids.add(r.created_by)
+        if r.updated_by:
+            user_ids.add(r.updated_by)
+
+    users = get_users_by_ids(db, list(user_ids))
+    user_map = {u.id: u.username for u in users}
+
     return [
         {
             "id": r.id,
@@ -43,11 +55,12 @@ def read_roles(db: Session = Depends(get_db)):
             "status": r.status,
             "created_at": r.created_at,
             "updated_at": r.updated_at,
-            "created_by": r.created_by,
-            "updated_by": r.updated_by
+            "created_by": user_map.get(r.created_by),
+            "updated_by": user_map.get(r.updated_by),
         }
         for r in roles
     ]
+
 
 
 @router.get("/{rol_id}")
