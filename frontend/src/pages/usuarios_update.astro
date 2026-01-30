@@ -83,7 +83,7 @@ import Menu from "../components/Menu.astro";
 
     roles.forEach((r) => {
       const option = document.createElement("option");
-      option.value = r.id; // 👈 IMPORTANTE: ID
+      option.value = r.id;
       option.textContent = r.nombre;
 
       if (r.id === selectedRolId) {
@@ -121,7 +121,7 @@ import Menu from "../components/Menu.astro";
       body: JSON.stringify({
         username: usernameInput.value,
         rol_id: Number(rolSelect.value),
-        user_id: usuarioActualId,
+        updated_by: usuarioActualId,
       }),
     });
 

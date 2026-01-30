@@ -115,12 +115,22 @@ def update_existing_user(
     username: str = Body(None),
     rol_id: int = Body(None),
     status: bool = Body(None),
+    updated_by: int = Body(None),
     db: Session = Depends(get_db),
-    updated_by: int = Body(...),
 ):
     try:
+        if updated_by is None:
+            raise HTTPException(
+                status_code=400,
+                detail="updated_by es obligatorio para actualizar el usuario"
+            )
+
         updated_user = update_usuario(
-            db=db, user_id=user_id, username=username, rol_id=rol_id, status=status,
+            db=db,
+            user_id=user_id,
+            username=username,
+            rol_id=rol_id,
+            status=status,
             updated_by=updated_by
         )
 
