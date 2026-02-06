@@ -1,7 +1,7 @@
 ---
 import MainLayout from "../layouts/MainLayout.astro";
 import Sidebar from "../components/Sidebar.astro";
-import Menu from "../components/Menu.astro";
+import Menu from "../components/menu.astro";
 ---
 
 <MainLayout title="Editar Rol">
@@ -53,7 +53,7 @@ import Menu from "../components/Menu.astro";
 <script is:inline>
   const params = new URLSearchParams(window.location.search);
   const rolId = params.get("id");
-
+  const token = localStorage.getItem("token");
   if (!rolId) {
     alert("ID de rol no encontrado");
     window.location.href = "/roles";
@@ -66,7 +66,12 @@ import Menu from "../components/Menu.astro";
   const usuarioActualId = JSON.parse(usuarioActual).id;
 
   async function loadRol() {
-    const res = await fetch(`http://localhost:8000/roles/${rolId}`);
+    const res = await fetch(`http://localhost:8000/roles/${rolId}`, {
+      method: "GET",
+      headers: {
+        Authorization: token,
+      },
+    });
     if (!res.ok) {
       alert("No se pudo cargar el rol");
       return;
@@ -83,6 +88,7 @@ import Menu from "../components/Menu.astro";
       method: "PUT",
       headers: {
         "Content-Type": "application/json",
+        Authorization: token,
       },
       body: JSON.stringify({
         nombre: nombreInput.value,

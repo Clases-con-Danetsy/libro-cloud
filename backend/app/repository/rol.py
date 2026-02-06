@@ -15,34 +15,44 @@ def get_role_by_id(db: Session, id: int):
 
 
 def create_role(db: Session, nombre: str, created_by: int, updated_by: int):
-    db_role = Rol(nombre=nombre, status=True, created_by=created_by, updated_by=updated_by)
+    db_role = Rol(
+        nombre=nombre, status=True, created_by=created_by, updated_by=updated_by
+    )
     db.add(db_role)
     db.commit()
     db.refresh(db_role)
     return db_role
 
 
-def delete_role(db: Session, rol_id: int):
+def delete_role(db: Session, rol_id: int, current_user: int):
     db_role = db.query(Rol).filter(Rol.id == rol_id).first()
     if not db_role:
         return None
     db_role.status = False
+    db_role.updated_by = current_user
     db.commit()
     db.refresh(db_role)
     return db_role
 
 
-def activate_role(db: Session, rol_id: int):
+def activate_role(db: Session, rol_id: int, current_user: int):
     db_role = db.query(Rol).filter(Rol.id == rol_id).first()
     if not db_role:
         return None
     db_role.status = True
+    db_role.updated_by = current_user
     db.commit()
     db.refresh(db_role)
     return db_role
 
 
-def update_role(db: Session, rol_id: int, nombre: str = None, status: bool = None, updated_by: int = None):
+def update_role(
+    db: Session,
+    rol_id: int,
+    nombre: str = None,
+    status: bool = None,
+    updated_by: int = None,
+):
     db_role = db.query(Rol).filter(Rol.id == rol_id).first()
     if not db_role:
         return None

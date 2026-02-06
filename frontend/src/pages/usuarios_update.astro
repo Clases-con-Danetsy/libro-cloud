@@ -1,7 +1,7 @@
 ---
 import MainLayout from "../layouts/MainLayout.astro";
 import Sidebar from "../components/Sidebar.astro";
-import Menu from "../components/Menu.astro";
+import Menu from "../components/menu.astro";
 ---
 
 <MainLayout title="Editar Usuario">
@@ -67,7 +67,7 @@ import Menu from "../components/Menu.astro";
     alert("ID de usuario no encontrado");
     window.location.href = "/usuarios";
   }
-
+  const token = localStorage.getItem("token");
   const usernameInput = document.getElementById("username");
   const rolSelect = document.getElementById("rol");
   const form = document.getElementById("usuario-form");
@@ -76,7 +76,12 @@ import Menu from "../components/Menu.astro";
 
   // 🔹 cargar roles
   async function loadRoles(selectedRolId) {
-    const res = await fetch("http://localhost:8000/roles");
+    const res = await fetch("http://localhost:8000/roles", {
+      method: "GET",
+      headers: {
+        Authorization: token,
+      },
+    });
     const roles = await res.json();
 
     rolSelect.innerHTML = "";
@@ -96,7 +101,12 @@ import Menu from "../components/Menu.astro";
 
   // 🔹 cargar usuario por ID
   async function loadUsuario() {
-    const res = await fetch(`http://localhost:8000/usuarios/${userId}`);
+    const res = await fetch(`http://localhost:8000/usuarios/${userId}`, {
+      method: "GET",
+      headers: {
+        Authorization: token,
+      },
+    });
     if (!res.ok) {
       alert("No se pudo cargar el usuario");
       return;
@@ -117,6 +127,7 @@ import Menu from "../components/Menu.astro";
       method: "PUT",
       headers: {
         "Content-Type": "application/json",
+        Authorization: token,
       },
       body: JSON.stringify({
         username: usernameInput.value,

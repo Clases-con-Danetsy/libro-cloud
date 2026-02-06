@@ -1,6 +1,8 @@
 from fastapi import APIRouter, Depends, Body, HTTPException
 from sqlalchemy.orm import Session
 from app.database import get_db
+from app.core.security import create_access_token
+from app.core.deps import get_current_user
 from app.repository.usuario import (
     create_usuario,
     get_usuario_by_username,
@@ -24,16 +26,22 @@ def create_new_user(
     rol_id: int = Body(...),
     db: Session = Depends(get_db),
     created_by: int = Body(...),
-    updated_by: int = Body(...)
+    updated_by: int = Body(...),
+    current_user: int = Depends(get_current_user),
 ):
+
     existing_user = get_usuario_by_username(db, username=username)
     if existing_user:
         raise HTTPException(status_code=400, detail="Username already registered")
 
     try:
         usuario = create_usuario(
-            db=db, username=username, password=password, rol_id=rol_id,
-            created_by=created_by, updated_by=updated_by
+            db=db,
+            username=username,
+            password=password,
+            rol_id=rol_id,
+            created_by=created_by,
+            updated_by=updated_by,
         )
         return {
             "id": usuario.id,
@@ -43,14 +51,16 @@ def create_new_user(
             "created_at": usuario.created_at,
             "updated_at": usuario.updated_at,
             "created_by": usuario.created_by,
-            "updated_by": usuario.updated_by
+            "updated_by": usuario.updated_by,
         }
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
 
 
 @users_router.get("/")
-def read_users(db: Session = Depends(get_db)):
+def read_users(
+    current_user: int = Depends(get_current_user), db: Session = Depends(get_db)
+):
     results = (
         db.query(
             Usuario.id,
@@ -60,13 +70,12 @@ def read_users(db: Session = Depends(get_db)):
             Usuario.updated_at,
             Rol.nombre.label("rol_name"),
             Usuario.created_by,
-            Usuario.updated_by
+            Usuario.updated_by,
         )
         .join(Rol)
         .all()
     )
 
-    
     user_ids = set()
     for r in results:
         if r.created_by:
@@ -95,7 +104,12 @@ def read_users(db: Session = Depends(get_db)):
 
 
 @users_router.get("/{user_id}")
-def read_user_by_id(user_id: int, db: Session = Depends(get_db)):
+def read_user_by_id(
+    user_id: int,
+    current_user: int = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+
     user = get_usuario_by_id(db, user_id)
     if not user:
         raise HTTPException(status_code=404, detail="Usuario no encontrado")
@@ -117,12 +131,14 @@ def update_existing_user(
     status: bool = Body(None),
     updated_by: int = Body(None),
     db: Session = Depends(get_db),
+    current_user: int = Depends(get_current_user),
 ):
+
     try:
         if updated_by is None:
             raise HTTPException(
                 status_code=400,
-                detail="updated_by es obligatorio para actualizar el usuario"
+                detail="updated_by es obligatorio para actualizar el usuario",
             )
 
         updated_user = update_usuario(
@@ -131,7 +147,7 @@ def update_existing_user(
             username=username,
             rol_id=rol_id,
             status=status,
-            updated_by=updated_by
+            updated_by=updated_by,
         )
 
         if not updated_user:
@@ -153,8 +169,13 @@ def update_existing_user(
 
 
 @users_router.delete("/{user_id}")
-def delete_user_endpoint(user_id: int, db: Session = Depends(get_db)):
-    deleted_user = delete_usuario(db, user_id)
+def delete_user_endpoint(
+    user_id: int,
+    current_user: int = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+
+    deleted_user = delete_usuario(db, user_id, current_user)
     if not deleted_user:
         raise HTTPException(status_code=404, detail="Usuario no encontrado")
 
@@ -166,8 +187,13 @@ def delete_user_endpoint(user_id: int, db: Session = Depends(get_db)):
 
 
 @users_router.put("/{user_id}/activate")
-def activate_user_endpoint(user_id: int, db: Session = Depends(get_db)):
-    activated_user = activate_usuario(db, user_id)
+def activate_user_endpoint(
+    user_id: int,
+    current_user: int = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+
+    activated_user = activate_usuario(db, user_id, current_user)
     if not activated_user:
         raise HTTPException(status_code=404, detail="Usuario no encontrado")
 
@@ -182,9 +208,19 @@ def activate_user_endpoint(user_id: int, db: Session = Depends(get_db)):
 def login(
     username: str = Body(...), password: str = Body(...), db: Session = Depends(get_db)
 ):
+
     try:
         user_response = login_usuario(db, username, password)
-        return {"message": "Login successful", "user": user_response}
+
+        token = create_access_token({"sub": str(user_response["id"])})
+
+        return {
+            "message": "Login successful",
+            "access_token": token,
+            "token_type": "bearer",
+            "user": user_response,
+        }
+
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
 

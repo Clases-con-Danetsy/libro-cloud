@@ -28,13 +28,20 @@ def crear_usuario_inicial(db: Session):
             rol_id=rol_admin.id,
             status=True,
             created_by=1,
-            updated_by=1
+            updated_by=1,
         )
         db.add(nuevo)
         db.commit()
 
 
-def create_usuario(db: Session, username: str, password: str, rol_id: int, created_by: int, updated_by: int):
+def create_usuario(
+    db: Session,
+    username: str,
+    password: str,
+    rol_id: int,
+    created_by: int,
+    updated_by: int,
+):
     rol = db.query(Rol).filter(Rol.id == rol_id).first()
     if not rol:
         raise ValueError("El rol especificado no existe.")
@@ -49,7 +56,7 @@ def create_usuario(db: Session, username: str, password: str, rol_id: int, creat
         rol_id=rol_id,
         status=True,
         created_by=created_by,
-        updated_by=updated_by
+        updated_by=updated_by,
     )
     db.add(nuevo_usuario)
     db.commit()
@@ -99,21 +106,23 @@ def update_usuario(
     return usuario_db
 
 
-def delete_usuario(db: Session, user_id: int):
+def delete_usuario(db: Session, user_id: int, current_user: int):
     usuario_db = db.query(Usuario).filter(Usuario.id == user_id).first()
     if not usuario_db:
         return None
-    usuario_db.status = False  
+    usuario_db.status = False
+    usuario_db.updated_by = current_user
     db.commit()
     db.refresh(usuario_db)
     return usuario_db
 
 
-def activate_usuario(db: Session, user_id: int):
+def activate_usuario(db: Session, user_id: int, current_user: int):
     usuario_db = db.query(Usuario).filter(Usuario.id == user_id).first()
     if not usuario_db:
         return None
-    usuario_db.status = True 
+    usuario_db.status = True
+    usuario_db.updated_by = current_user
     db.commit()
     db.refresh(usuario_db)
     return usuario_db
@@ -137,11 +146,10 @@ def login_usuario(db: Session, username: str, password: str):
         "username": usuario.username,
         "role_id": usuario.rol_id,
         "rol_name": rol_nombre,
-
     }
-    
+
+
 def get_users_by_ids(db: Session, ids: list[int]):
     if not ids:
         return []
     return db.query(Usuario).filter(Usuario.id.in_(ids)).all()
-

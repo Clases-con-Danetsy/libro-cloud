@@ -1,7 +1,7 @@
 ---
 import MainLayout from "../layouts/MainLayout.astro";
 import Sidebar from "../components/Sidebar.astro";
-import Menu from "../components/Menu.astro";
+import Menu from "../components/menu.astro";
 ---
 
 <MainLayout title="Crear Usuario">
@@ -44,8 +44,7 @@ import Menu from "../components/Menu.astro";
               <select
                 id="rol"
                 class="w-full border rounded-md px-3 py-2"
-                required
-              ></select>
+                required></select>
             </div>
 
             <!-- Botones -->
@@ -75,7 +74,7 @@ import Menu from "../components/Menu.astro";
   if (localStorage.getItem("isLoggedIn") !== "true") {
     window.location.replace("/");
   }
-
+  const token = localStorage.getItem("token");
   const form = document.getElementById("usuario-form");
   const usernameInput = document.getElementById("username");
   const passwordInput = document.getElementById("password");
@@ -83,9 +82,13 @@ import Menu from "../components/Menu.astro";
   const usuarioActual = localStorage.getItem("user");
   const usuarioActualId = JSON.parse(usuarioActual).id;
 
-
   async function loadRoles() {
-    const res = await fetch("http://localhost:8000/roles");
+    const res = await fetch("http://localhost:8000/roles", {
+      method: "GET",
+      headers: {
+        Authorization: token,
+      },
+    });
     const roles = await res.json();
 
     rolSelect.innerHTML = "";
@@ -105,6 +108,7 @@ import Menu from "../components/Menu.astro";
       method: "POST",
       headers: {
         "Content-Type": "application/json",
+        Authorization: token,
       },
       body: JSON.stringify({
         username: usernameInput.value,

@@ -116,6 +116,10 @@
           console.log(responseData);
           if (responseData.user) {
             localStorage.setItem("user", JSON.stringify(responseData.user));
+            localStorage.setItem(
+              "token",
+              responseData.token_type + " " + responseData.access_token,
+            );
           }
           window.location.replace("/dashboard");
         } else {

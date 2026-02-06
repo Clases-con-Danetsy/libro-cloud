@@ -1,7 +1,7 @@
 ---
 import MainLayout from "../layouts/MainLayout.astro";
 import Sidebar from "../components/Sidebar.astro";
-import Menu from "../components/Menu.astro";
+import Menu from "../components/menu.astro";
 ---
 
 <MainLayout title="Roles">
@@ -13,7 +13,6 @@ import Menu from "../components/Menu.astro";
 
       <main class="flex-1 p-10">
         <div class="max-w-6xl mx-auto">
-
           <div class="flex justify-end mb-4">
             <a
               href="/roles_create"
@@ -29,14 +28,38 @@ import Menu from "../components/Menu.astro";
             <table class="min-w-full leading-normal">
               <thead>
                 <tr>
-                  <th class="px-5 py-3 bg-gray-100 border-b text-xs font-semibold">ID</th>
-                  <th class="px-5 py-3 bg-gray-100 border-b text-xs font-semibold">Nombre</th>
-                  <th class="px-5 py-3 bg-gray-100 border-b text-xs font-semibold">Creado</th>
-                  <th class="px-5 py-3 bg-gray-100 border-b text-xs font-semibold">Actualizado</th>
-                  <th class="px-5 py-3 bg-gray-100 border-b text-xs font-semibold">Creado por</th>
-                  <th class="px-5 py-3 bg-gray-100 border-b text-xs font-semibold">Actualizado por</th>
-                  <th class="px-5 py-3 bg-gray-100 border-b text-xs font-semibold">Estado</th>
-                  <th class="px-5 py-3 bg-gray-100 border-b text-xs font-semibold">Acciones</th>
+                  <th
+                    class="px-5 py-3 bg-gray-100 border-b text-xs font-semibold"
+                    >ID</th
+                  >
+                  <th
+                    class="px-5 py-3 bg-gray-100 border-b text-xs font-semibold"
+                    >Nombre</th
+                  >
+                  <th
+                    class="px-5 py-3 bg-gray-100 border-b text-xs font-semibold"
+                    >Creado</th
+                  >
+                  <th
+                    class="px-5 py-3 bg-gray-100 border-b text-xs font-semibold"
+                    >Actualizado</th
+                  >
+                  <th
+                    class="px-5 py-3 bg-gray-100 border-b text-xs font-semibold"
+                    >Creado por</th
+                  >
+                  <th
+                    class="px-5 py-3 bg-gray-100 border-b text-xs font-semibold"
+                    >Actualizado por</th
+                  >
+                  <th
+                    class="px-5 py-3 bg-gray-100 border-b text-xs font-semibold"
+                    >Estado</th
+                  >
+                  <th
+                    class="px-5 py-3 bg-gray-100 border-b text-xs font-semibold"
+                    >Acciones</th
+                  >
                 </tr>
               </thead>
 
@@ -57,10 +80,16 @@ import Menu from "../components/Menu.astro";
       <p class="mb-6">¿Deseas desactivar este rol?</p>
 
       <div class="flex justify-end gap-3">
-        <button onclick="closeModal()" class="cursor-pointer px-5 py-2 border rounded-full">
+        <button
+          onclick="closeModal()"
+          class="cursor-pointer px-5 py-2 border rounded-full"
+        >
           Cancelar
         </button>
-        <button onclick="confirmDeactivate()" class="cursor-pointer px-5 py-2 bg-pink-500 text-white rounded-full">
+        <button
+          onclick="confirmDeactivate()"
+          class="cursor-pointer px-5 py-2 bg-pink-500 text-white rounded-full"
+        >
           Desactivar
         </button>
       </div>
@@ -70,7 +99,7 @@ import Menu from "../components/Menu.astro";
 
 <script is:inline>
   let roleToDeactivate = null;
-
+  const token = localStorage.getItem("token");
   function formatDate(dateString) {
     if (!dateString) return "";
     const date = new Date(dateString);
@@ -88,7 +117,12 @@ import Menu from "../components/Menu.astro";
   }
 
   async function activateRole(id) {
-    await fetch(`http://localhost:8000/roles/${id}/activate`, { method: "PUT" });
+    await fetch(`http://localhost:8000/roles/${id}/activate`, {
+      method: "PUT",
+      headers: {
+        Authorization: token,
+      },
+    });
     loadRoles();
   }
 
@@ -107,13 +141,21 @@ import Menu from "../components/Menu.astro";
   async function confirmDeactivate() {
     await fetch(`http://localhost:8000/roles/${roleToDeactivate}`, {
       method: "DELETE",
+      headers: {
+        Authorization: token,
+      },
     });
     closeModal();
     loadRoles();
   }
 
   async function loadRoles() {
-    const res = await fetch("http://localhost:8000/roles");
+    const res = await fetch("http://localhost:8000/roles", {
+      method: "GET",
+      headers: {
+        Authorization: token,
+      },
+    });
     const roles = await res.json();
 
     const tbody = document.getElementById("roles-table-body");

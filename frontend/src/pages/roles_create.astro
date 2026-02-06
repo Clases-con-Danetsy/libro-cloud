@@ -1,7 +1,7 @@
 ---
 import MainLayout from "../layouts/MainLayout.astro";
 import Sidebar from "../components/Sidebar.astro";
-import Menu from "../components/Menu.astro";
+import Menu from "../components/menu.astro";
 ---
 
 <MainLayout title="Agregar Rol">
@@ -54,7 +54,7 @@ import Menu from "../components/Menu.astro";
 <script is:inline>
   const form = document.getElementById("rol-form");
   const nombreInput = document.getElementById("nombre");
-
+  const token = localStorage.getItem("token");
   const usuarioActual = localStorage.getItem("user");
   const usuarioActualId = JSON.parse(usuarioActual).id;
 
@@ -65,10 +65,11 @@ import Menu from "../components/Menu.astro";
       method: "POST",
       headers: {
         "Content-Type": "application/json",
+        Authorization: token,
       },
       body: JSON.stringify({
         nombre: nombreInput.value,
-        user_id: usuarioActualId
+        user_id: usuarioActualId,
       }),
     });
 
