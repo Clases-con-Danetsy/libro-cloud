@@ -22,9 +22,9 @@ def create_new_user(
     username: str = Body(...),
     password: str = Body(...),
     rol_id: int = Body(...),
-    db: Session = Depends(get_db),
     created_by: int = Body(...),
-    updated_by: int = Body(...)
+    updated_by: int = Body(...),
+    db: Session = Depends(get_db),
 ):
     existing_user = get_usuario_by_username(db, username=username)
     if existing_user:
@@ -32,9 +32,14 @@ def create_new_user(
 
     try:
         usuario = create_usuario(
-            db=db, username=username, password=password, rol_id=rol_id,
-            created_by=created_by, updated_by=updated_by
+            db=db,
+            username=username,
+            password=password,
+            rol_id=rol_id,
+            created_by=created_by,
+            updated_by=updated_by
         )
+
         return {
             "id": usuario.id,
             "username": usuario.username,
@@ -43,10 +48,12 @@ def create_new_user(
             "created_at": usuario.created_at,
             "updated_at": usuario.updated_at,
             "created_by": usuario.created_by,
-            "updated_by": usuario.updated_by
+            "updated_by": usuario.updated_by,
         }
+
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
+
 
 
 @users_router.get("/")

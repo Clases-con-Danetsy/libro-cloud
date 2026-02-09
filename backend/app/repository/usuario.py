@@ -4,7 +4,7 @@ from app.models import Usuario, Rol
 
 
 def crear_usuario_inicial(db: Session):
-    # Ensure admin role exists first
+
     rol_admin = db.query(Rol).filter(Rol.nombre == "admin").first()
     if not rol_admin:
         rol_admin = Rol(nombre="admin", status=True, created_by=1, updated_by=1)
@@ -25,7 +25,7 @@ def crear_usuario_inicial(db: Session):
         nuevo = Usuario(
             username="test",
             password=password_hash,
-            rol_id=rol_admin.id,
+            role_id=role_admin.id,
             status=True,
             created_by=1,
             updated_by=1
@@ -69,7 +69,7 @@ def update_usuario(
     db: Session,
     user_id: int,
     username: str = None,
-    rol_id: int = None,
+    role_id: int = None,
     status: bool = None,
     updated_by: int = None,
 ):
