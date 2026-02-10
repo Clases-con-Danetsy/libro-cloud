@@ -66,7 +66,12 @@ import Menu from "../components/Menu.astro";
   const usuarioActualId = JSON.parse(usuarioActual).id;
 
   async function loadRol() {
-    const res = await fetch(`http://localhost:8000/roles/${rolId}`);
+    const res = await fetch(`http://localhost:8000/roles/${rolId}`, {
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem("access_token")}`,
+      },
+    });
+    
     if (!res.ok) {
       alert("No se pudo cargar el rol");
       return;
@@ -83,6 +88,7 @@ import Menu from "../components/Menu.astro";
       method: "PUT",
       headers: {
         "Content-Type": "application/json",
+        Authorization: `Bearer ${localStorage.getItem("access_token")}`,
       },
       body: JSON.stringify({
         nombre: nombreInput.value,

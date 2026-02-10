@@ -40,7 +40,7 @@ import Menu from "../components/Menu.astro";
             <div class="flex gap-4">
               <button
                 type="submit"
-                class="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700"
+                class="cursor-pointer bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700"
               >
                 Guardar cambios
               </button>
@@ -76,7 +76,11 @@ import Menu from "../components/Menu.astro";
 
   // 🔹 cargar roles
   async function loadRoles(selectedRolId) {
-    const res = await fetch("http://localhost:8000/roles");
+    const res = await fetch("http://localhost:8000/roles", {
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem("access_token")}`,
+      },
+    });
     const roles = await res.json();
 
     rolSelect.innerHTML = "";
@@ -96,7 +100,12 @@ import Menu from "../components/Menu.astro";
 
   // 🔹 cargar usuario por ID
   async function loadUsuario() {
-    const res = await fetch(`http://localhost:8000/usuarios/${userId}`);
+    const res = await fetch(`http://localhost:8000/usuarios/${userId}`, {
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem("access_token")}`,
+      },
+    });
+    
     if (!res.ok) {
       alert("No se pudo cargar el usuario");
       return;
@@ -110,41 +119,43 @@ import Menu from "../components/Menu.astro";
   }
 
   // 🔹 enviar actualización
-form.addEventListener("submit", async (e) => {
-  e.preventDefault();
+  form.addEventListener("submit", async (e) => {
+    e.preventDefault();
 
-  const loggedUserId = localStorage.getItem("user_id");
+    const loggedUserId = localStorage.getItem("user_id");
 
-  if (!loggedUserId) {
-    alert("No se pudo obtener el ID del usuario logueado");
-    return;
-  }
-
-  try {
-    const res = await fetch(`http://localhost:8000/usuarios/${userId}`, {
-      method: "PUT",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        username: usernameInput.value,
-        rol_id: Number(rolSelect.value),
-        updated_by: Number(loggedUserId),
-      }),
-    });
-
-    if (res.ok) {
-      alert("Usuario actualizado correctamente");
-      window.location.href = "/usuarios";
-    } else {
-      const errorData = await res.json();
-      console.error("Error del servidor:", errorData);
-      alert("Error al actualizar usuario: " + (errorData.detail || "Error desconocido"));
+    if (!loggedUserId) {
+      alert("No se pudo obtener el ID del usuario logueado");
+      return;
     }
-  } catch (error) {
-    console.error("Error:", error);
-    alert("Error de conexión al actualizar usuario");
-  }
-});
+
+    try {
+      const res = await fetch(`http://localhost:8000/usuarios/${userId}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${localStorage.getItem("access_token")}`, 
+        },
+        body: JSON.stringify({
+          username: usernameInput.value,
+          rol_id: Number(rolSelect.value),
+          updated_by: Number(loggedUserId),
+        }),
+      });
+
+      if (res.ok) {
+        alert("Usuario actualizado correctamente");
+        window.location.href = "/usuarios";
+      } else {
+        const errorData = await res.json();
+        console.error("Error del servidor:", errorData);
+        alert("Error al actualizar usuario: " + (errorData.detail || "Error desconocido"));
+      }
+    } catch (error) {
+      console.error("Error:", error);
+      alert("Error de conexión al actualizar usuario");
+    }
+  });
+
   loadUsuario();
 </script>

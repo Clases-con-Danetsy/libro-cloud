@@ -91,7 +91,6 @@ import Menu from "../components/Menu.astro";
     window.location.href = `/roles_update?id=${id}`;
   }
 
-  // ✅ ACTIVAR ROL (REGISTRA updated_by)
   async function activateRole(id) {
     const loggedUserId = localStorage.getItem("user_id");
 
@@ -103,7 +102,12 @@ import Menu from "../components/Menu.astro";
     try {
       const response = await fetch(
         `http://localhost:8000/roles/${id}/activate/${loggedUserId}`,
-        { method: "PUT" }
+        {
+          method: "PUT",
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("access_token")}`, 
+          },
+        }
       );
 
       if (!response.ok) {
@@ -132,7 +136,7 @@ import Menu from "../components/Menu.astro";
     document.getElementById("confirm-modal").classList.remove("flex");
   }
 
-  // ✅ DESACTIVAR ROL (REGISTRA updated_by)
+
   async function confirmDeactivate() {
     if (!roleToDeactivate) return;
 
@@ -147,7 +151,12 @@ import Menu from "../components/Menu.astro";
     try {
       const response = await fetch(
         `http://localhost:8000/roles/${roleToDeactivate}/${loggedUserId}`,
-        { method: "DELETE" }
+        {
+          method: "DELETE",
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("access_token")}`, 
+          },
+        }
       );
 
       if (!response.ok) {
@@ -168,7 +177,11 @@ import Menu from "../components/Menu.astro";
 
   async function loadRoles() {
     try {
-      const res = await fetch("http://localhost:8000/roles");
+      const res = await fetch("http://localhost:8000/roles", {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("access_token")}`, 
+        },
+      });
       
       if (!res.ok) {
         throw new Error("Error al cargar roles");
