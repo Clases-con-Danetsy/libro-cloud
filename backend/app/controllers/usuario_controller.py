@@ -1,3 +1,4 @@
+from app.core.security import create_access_token
 from fastapi import APIRouter, Depends, Body, HTTPException
 from sqlalchemy.orm import Session
 from app.database import get_db
@@ -192,7 +193,8 @@ def login(
 ):
     try:
         user_response = login_usuario(db, username, password)
-        return {"message": "Login successful", "user": user_response}
+        access_token = create_access_token(data={"sub": str(user_response["id"])})  # ✅ LÍNEA NUEVA
+        return {"message": "Login successful", "user": user_response, "access_token": access_token, "token_type": "bearer"}  # ✅ LÍNEA MODIFICADA
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
 

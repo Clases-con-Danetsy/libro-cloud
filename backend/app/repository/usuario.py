@@ -1,5 +1,5 @@
 from sqlalchemy.orm import Session
-from werkzeug.security import generate_password_hash, check_password_hash
+from app.core.security import hash_password, verify_password
 from app.models import Usuario, Rol
 
 
@@ -13,7 +13,7 @@ def crear_usuario_inicial(db: Session):
         db.refresh(rol_admin)
 
     usuario_test = db.query(Usuario).filter(Usuario.username == "test").first()
-    password_hash = generate_password_hash("123456")
+    password_hash = hash_password("123456")
 
     if usuario_test:
         usuario_test.password = password_hash
@@ -42,7 +42,7 @@ def create_usuario(db: Session, username: str, password: str, rol_id: int, creat
     if hasattr(rol, "status") and rol.status != True:
         raise ValueError("El rol especificado no está activo.")
 
-    hashed_password = generate_password_hash(password)
+    hashed_password = hash_password(password)
     nuevo_usuario = Usuario(
         username=username,
         password=hashed_password,
@@ -128,7 +128,7 @@ def login_usuario(db: Session, username: str, password: str):
     if not usuario:
         raise ValueError("Usuario no encontrado")
 
-    if not check_password_hash(usuario.password, password):
+    if not verify_password(password, usuario.password):
         raise ValueError("Contraseña incorrecta")
 
     if usuario.status != True:

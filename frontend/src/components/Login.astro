@@ -114,6 +114,7 @@
           
           // Guardar sesión
           localStorage.setItem("isLoggedIn", "true");
+          localStorage.setItem("access_token", responseData.access_token);
           
           if (responseData.user) {
             localStorage.setItem("user", JSON.stringify(responseData.user));
