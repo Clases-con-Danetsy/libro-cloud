@@ -1,3 +1,4 @@
+from app.core.deps import get_current_user
 from fastapi import APIRouter, Depends, Body, HTTPException
 from sqlalchemy.orm import Session
 from app.database import get_db
@@ -16,7 +17,8 @@ router = APIRouter(prefix="/roles", tags=["Roles"])
 
 
 @router.post("/")
-def create_new_role(nombre: str = Body(..., embed=True), user_id: int = Body(..., embed=True), db: Session = Depends(get_db)):
+def create_new_role(nombre: str = Body(..., embed=True), user_id: int = Body(..., embed=True), db: Session = Depends(get_db),
+current_user_id: int = Depends(get_current_user)):
     db_role = get_role_by_name(db, nombre=nombre)
     if db_role:
         raise HTTPException(status_code=400, detail="Role already exists")
@@ -35,7 +37,7 @@ def create_new_role(nombre: str = Body(..., embed=True), user_id: int = Body(...
 
 
 @router.get("/")
-def read_roles(db: Session = Depends(get_db)):
+def read_roles(db: Session = Depends(get_db),current_user_id: int = Depends(get_current_user)):
     roles = get_roles(db)
 
     user_ids = set()
@@ -64,7 +66,7 @@ def read_roles(db: Session = Depends(get_db)):
 
 
 @router.get("/{rol_id}")
-def read_role_by_id(rol_id: int, db: Session = Depends(get_db)):
+def read_role_by_id(rol_id: int, db: Session = Depends(get_db),current_user_id: int = Depends(get_current_user)):
     role = get_role_by_id(db, rol_id)
     if not role:
         raise HTTPException(status_code=404, detail="Role not found")
@@ -78,7 +80,7 @@ def read_role_by_id(rol_id: int, db: Session = Depends(get_db)):
 
 
 @router.delete("/{rol_id}/{id_user}")
-def delete_role_endpoint(rol_id: int, id_user: int, db: Session = Depends(get_db)):
+def delete_role_endpoint(rol_id: int, id_user: int, db: Session = Depends(get_db),current_user_id: int = Depends(get_current_user)):
     deleted_role = delete_role(db, rol_id, id_user)
     if not deleted_role:
         raise HTTPException(status_code=404, detail="Role not found")
@@ -91,7 +93,8 @@ def delete_role_endpoint(rol_id: int, id_user: int, db: Session = Depends(get_db
 
 
 @router.put("/{rol_id}/activate/{id_user}")
-def activate_role_endpoint(rol_id: int, id_user: int, db: Session = Depends(get_db)):
+def activate_role_endpoint(rol_id: int, id_user: int, db: Session = Depends(get_db),
+current_user_id: int = Depends(get_current_user)):
     activated_role = activate_role(db, rol_id, id_user)
     if not activated_role:
         raise HTTPException(status_code=404, detail="Role not found")
@@ -110,6 +113,7 @@ def update_existing_role(
     status: bool = Body(None, embed=True),
     user_id: int = Body(..., embed=True),
     db: Session = Depends(get_db),
+    current_user_id: int = Depends(get_current_user)
 ):
     updated_role = update_role(db=db, rol_id=rol_id, nombre=nombre, status=status, updated_by=user_id)
 

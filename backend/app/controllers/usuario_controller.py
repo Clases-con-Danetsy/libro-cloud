@@ -1,3 +1,4 @@
+from app.core.deps import get_current_user
 from app.core.security import create_access_token
 from fastapi import APIRouter, Depends, Body, HTTPException
 from sqlalchemy.orm import Session
@@ -26,6 +27,7 @@ def create_new_user(
     created_by: int = Body(...),
     updated_by: int = Body(...),
     db: Session = Depends(get_db),
+    current_user_id: int = Depends(get_current_user),
 ):
     existing_user = get_usuario_by_username(db, username=username)
     if existing_user:
@@ -58,7 +60,7 @@ def create_new_user(
 
 
 @users_router.get("/")
-def read_users(db: Session = Depends(get_db)):
+def read_users(db: Session = Depends(get_db),current_user_id: int = Depends(get_current_user),):
     results = (
         db.query(
             Usuario.id,
@@ -82,11 +84,11 @@ def read_users(db: Session = Depends(get_db)):
         if r.updated_by:
             user_ids.add(r.updated_by)
 
-    # 2. traer usuarios relacionados
+   
     users = get_users_by_ids(db, list(user_ids))
     user_map = {u.id: u.username for u in users}
 
-    # 3. responder con nombres
+    
     return [
         {
             "id": r.id,
@@ -103,7 +105,7 @@ def read_users(db: Session = Depends(get_db)):
 
 
 @users_router.get("/{user_id}")
-def read_user_by_id(user_id: int, db: Session = Depends(get_db)):
+def read_user_by_id(user_id: int, db: Session = Depends(get_db),current_user_id: int = Depends(get_current_user)):
     user = get_usuario_by_id(db, user_id)
     if not user:
         raise HTTPException(status_code=404, detail="Usuario no encontrado")
@@ -125,6 +127,7 @@ def update_existing_user(
     status: bool = Body(None),
     updated_by: int = Body(None),
     db: Session = Depends(get_db),
+    current_user_id: int = Depends(get_current_user),
 ):
     try:
         if updated_by is None:
@@ -160,7 +163,7 @@ def update_existing_user(
         raise HTTPException(status_code=400, detail=str(e))
 
 @users_router.delete("/{user_id}/{id_user}")
-def delete_user_endpoint(user_id: int, id_user: int, db: Session = Depends(get_db)):
+def delete_user_endpoint(user_id: int, id_user: int, db: Session = Depends(get_db),current_user_id: int = Depends(get_current_user)):
     deleted_user = delete_usuario(db, user_id, id_user)
 
     if not deleted_user:
@@ -174,7 +177,8 @@ def delete_user_endpoint(user_id: int, id_user: int, db: Session = Depends(get_d
 
 
 @users_router.put("/{user_id}/activate/{id_user}")
-def activate_user_endpoint(user_id: int, id_user: int, db: Session = Depends(get_db)):
+def activate_user_endpoint(user_id: int, id_user: int, db: Session = Depends(get_db),
+current_user_id: int = Depends(get_current_user)):
     activated_user = activate_usuario(db, user_id, id_user)
 
     if not activated_user:
