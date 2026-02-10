@@ -158,10 +158,10 @@ def update_existing_user(
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
 
+@users_router.delete("/{user_id}/{id_user}")
+def delete_user_endpoint(user_id: int, id_user: int, db: Session = Depends(get_db)):
+    deleted_user = delete_usuario(db, user_id, id_user)
 
-@users_router.delete("/{user_id}")
-def delete_user_endpoint(user_id: int, db: Session = Depends(get_db)):
-    deleted_user = delete_usuario(db, user_id)
     if not deleted_user:
         raise HTTPException(status_code=404, detail="Usuario no encontrado")
 
@@ -172,9 +172,10 @@ def delete_user_endpoint(user_id: int, db: Session = Depends(get_db)):
     }
 
 
-@users_router.put("/{user_id}/activate")
-def activate_user_endpoint(user_id: int, db: Session = Depends(get_db)):
-    activated_user = activate_usuario(db, user_id)
+@users_router.put("/{user_id}/activate/{id_user}")
+def activate_user_endpoint(user_id: int, id_user: int, db: Session = Depends(get_db)):
+    activated_user = activate_usuario(db, user_id, id_user)
+
     if not activated_user:
         raise HTTPException(status_code=404, detail="Usuario no encontrado")
 

@@ -77,9 +77,9 @@ def read_role_by_id(rol_id: int, db: Session = Depends(get_db)):
     }
 
 
-@router.delete("/{rol_id}")
-def delete_role_endpoint(rol_id: int, db: Session = Depends(get_db)):
-    deleted_role = delete_role(db, rol_id)
+@router.delete("/{rol_id}/{id_user}")
+def delete_role_endpoint(rol_id: int, id_user: int, db: Session = Depends(get_db)):
+    deleted_role = delete_role(db, rol_id, id_user)
     if not deleted_role:
         raise HTTPException(status_code=404, detail="Role not found")
 
@@ -90,9 +90,9 @@ def delete_role_endpoint(rol_id: int, db: Session = Depends(get_db)):
     }
 
 
-@router.put("/{rol_id}/activate")
-def activate_role_endpoint(rol_id: int, db: Session = Depends(get_db)):
-    activated_role = activate_role(db, rol_id)
+@router.put("/{rol_id}/activate/{id_user}")
+def activate_role_endpoint(rol_id: int, id_user: int, db: Session = Depends(get_db)):
+    activated_role = activate_role(db, rol_id, id_user)
     if not activated_role:
         raise HTTPException(status_code=404, detail="Role not found")
 

@@ -17,15 +17,15 @@ def crear_usuario_inicial(db: Session):
 
     if usuario_test:
         usuario_test.password = password_hash
-        usuario_test.status = True  # ACTIVO
-        if usuario_test.rol_id != rol_admin.id:
-            usuario_test.rol_id = rol_admin.id
+        usuario_test.status = True  
+        if usuario_test.rol_id != rol_admin.id: 
+            usuario_test.rol_id = rol_admin.id 
         db.commit()
     else:
         nuevo = Usuario(
             username="test",
             password=password_hash,
-            role_id=role_admin.id,
+            rol_id=rol_admin.id, 
             status=True,
             created_by=1,
             updated_by=1
@@ -69,7 +69,7 @@ def update_usuario(
     db: Session,
     user_id: int,
     username: str = None,
-    role_id: int = None,
+    rol_id: int = None,
     status: bool = None,
     updated_by: int = None,
 ):
@@ -99,21 +99,25 @@ def update_usuario(
     return usuario_db
 
 
-def delete_usuario(db: Session, user_id: int):
+def delete_usuario(db: Session, user_id: int, id_user: int):
     usuario_db = db.query(Usuario).filter(Usuario.id == user_id).first()
     if not usuario_db:
         return None
     usuario_db.status = False  
+    usuario_db.updated_by = id_user
     db.commit()
     db.refresh(usuario_db)
     return usuario_db
 
 
-def activate_usuario(db: Session, user_id: int):
+def activate_usuario(db: Session, user_id: int, id_user: int):
     usuario_db = db.query(Usuario).filter(Usuario.id == user_id).first()
     if not usuario_db:
         return None
-    usuario_db.status = True 
+
+    usuario_db.status = True
+    usuario_db.updated_by = id_user
+
     db.commit()
     db.refresh(usuario_db)
     return usuario_db

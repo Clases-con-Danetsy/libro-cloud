@@ -22,25 +22,26 @@ def create_role(db: Session, nombre: str, created_by: int, updated_by: int):
     return db_role
 
 
-def delete_role(db: Session, rol_id: int):
+def delete_role(db: Session, rol_id: int, id_user: int):
     db_role = db.query(Rol).filter(Rol.id == rol_id).first()
     if not db_role:
         return None
     db_role.status = False
+    db_role.updated_by = id_user  # ✅ Registrar quién desactivó
     db.commit()
     db.refresh(db_role)
     return db_role
 
 
-def activate_role(db: Session, rol_id: int):
+def activate_role(db: Session, rol_id: int, id_user: int):
     db_role = db.query(Rol).filter(Rol.id == rol_id).first()
     if not db_role:
         return None
     db_role.status = True
+    db_role.updated_by = id_user  # ✅ Registrar quién activó
     db.commit()
     db.refresh(db_role)
     return db_role
-
 
 def update_role(db: Session, rol_id: int, nombre: str = None, status: bool = None, updated_by: int = None):
     db_role = db.query(Rol).filter(Rol.id == rol_id).first()

@@ -8,6 +8,7 @@ app = FastAPI()
 
 origins = [
     "http://localhost:4321",
+    "http://127.0.0.1:4321",  # ✅ Agregar esta línea
     "http://localhost:3000",
 ]
 

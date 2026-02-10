@@ -110,9 +110,17 @@ import Menu from "../components/Menu.astro";
   }
 
   // 🔹 enviar actualización
-  form.addEventListener("submit", async (e) => {
-    e.preventDefault();
+form.addEventListener("submit", async (e) => {
+  e.preventDefault();
 
+  const loggedUserId = localStorage.getItem("user_id");
+
+  if (!loggedUserId) {
+    alert("No se pudo obtener el ID del usuario logueado");
+    return;
+  }
+
+  try {
     const res = await fetch(`http://localhost:8000/usuarios/${userId}`, {
       method: "PUT",
       headers: {
@@ -121,7 +129,7 @@ import Menu from "../components/Menu.astro";
       body: JSON.stringify({
         username: usernameInput.value,
         rol_id: Number(rolSelect.value),
-        updated_by: usuarioActualId,
+        updated_by: Number(loggedUserId),
       }),
     });
 
@@ -129,9 +137,14 @@ import Menu from "../components/Menu.astro";
       alert("Usuario actualizado correctamente");
       window.location.href = "/usuarios";
     } else {
-      alert("Error al actualizar usuario");
+      const errorData = await res.json();
+      console.error("Error del servidor:", errorData);
+      alert("Error al actualizar usuario: " + (errorData.detail || "Error desconocido"));
     }
-  });
-
+  } catch (error) {
+    console.error("Error:", error);
+    alert("Error de conexión al actualizar usuario");
+  }
+});
   loadUsuario();
 </script>

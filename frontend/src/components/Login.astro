@@ -110,13 +110,21 @@
         });
 
         if (response.ok) {
-          // Session logic restored - keeping it simple as requested
           const responseData = await response.json();
+          
+          // Guardar sesión
           localStorage.setItem("isLoggedIn", "true");
-          console.log(responseData);
+          
           if (responseData.user) {
             localStorage.setItem("user", JSON.stringify(responseData.user));
+            localStorage.setItem("user_id", responseData.user.id);
+            localStorage.setItem("username", responseData.user.username);
+            
+            if (responseData.user.rol_name) {
+              localStorage.setItem("rol_name", responseData.user.rol_name);
+            }
           }
+          
           window.location.replace("/dashboard");
         } else {
           try {
