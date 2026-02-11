@@ -105,7 +105,7 @@ import Menu from "../components/Menu.astro";
         Authorization: `Bearer ${localStorage.getItem("access_token")}`,
       },
     });
-    
+
     if (!res.ok) {
       alert("No se pudo cargar el usuario");
       return;
@@ -122,7 +122,8 @@ import Menu from "../components/Menu.astro";
   form.addEventListener("submit", async (e) => {
     e.preventDefault();
 
-    const loggedUserId = localStorage.getItem("user_id");
+    const loggedUser = localStorage.getItem("user");
+    const loggedUserId = JSON.parse(loggedUser).id;
 
     if (!loggedUserId) {
       alert("No se pudo obtener el ID del usuario logueado");
@@ -134,7 +135,7 @@ import Menu from "../components/Menu.astro";
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${localStorage.getItem("access_token")}`, 
+          Authorization: `Bearer ${localStorage.getItem("access_token")}`,
         },
         body: JSON.stringify({
           username: usernameInput.value,
@@ -149,7 +150,10 @@ import Menu from "../components/Menu.astro";
       } else {
         const errorData = await res.json();
         console.error("Error del servidor:", errorData);
-        alert("Error al actualizar usuario: " + (errorData.detail || "Error desconocido"));
+        alert(
+          "Error al actualizar usuario: " +
+            (errorData.detail || "Error desconocido"),
+        );
       }
     } catch (error) {
       console.error("Error:", error);
