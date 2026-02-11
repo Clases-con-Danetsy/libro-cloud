@@ -2,7 +2,7 @@ from app.core.deps import get_current_user
 from fastapi import APIRouter, Depends, Body, HTTPException
 from sqlalchemy.orm import Session
 from app.database import get_db
-from app.repository.usuario import get_users_by_ids  
+from app.repository.usuario import get_users_by_ids
 from app.repository.rol import (
     get_roles,
     create_role,
@@ -17,8 +17,12 @@ router = APIRouter(prefix="/roles", tags=["Roles"])
 
 
 @router.post("/")
-def create_new_role(nombre: str = Body(..., embed=True), user_id: int = Body(..., embed=True), db: Session = Depends(get_db),
-current_user_id: int = Depends(get_current_user)):
+def create_new_role(
+    nombre: str = Body(..., embed=True),
+    user_id: int = Body(..., embed=True),
+    db: Session = Depends(get_db),
+    current_user_id: int = Depends(get_current_user),
+):
     db_role = get_role_by_name(db, nombre=nombre)
     if db_role:
         raise HTTPException(status_code=400, detail="Role already exists")
@@ -32,12 +36,14 @@ current_user_id: int = Depends(get_current_user)):
         "created_at": role.created_at,
         "updated_at": role.updated_at,
         "created_by": role.created_by,
-        "updated_by": role.updated_by
+        "updated_by": role.updated_by,
     }
 
 
 @router.get("/")
-def read_roles(db: Session = Depends(get_db),current_user_id: int = Depends(get_current_user)):
+def read_roles(
+    db: Session = Depends(get_db), current_user_id: int = Depends(get_current_user)
+):
     roles = get_roles(db)
 
     user_ids = set()
@@ -64,9 +70,12 @@ def read_roles(db: Session = Depends(get_db),current_user_id: int = Depends(get_
     ]
 
 
-
 @router.get("/{rol_id}")
-def read_role_by_id(rol_id: int, db: Session = Depends(get_db),current_user_id: int = Depends(get_current_user)):
+def read_role_by_id(
+    rol_id: int,
+    db: Session = Depends(get_db),
+    current_user_id: int = Depends(get_current_user),
+):
     role = get_role_by_id(db, rol_id)
     if not role:
         raise HTTPException(status_code=404, detail="Role not found")
@@ -80,7 +89,12 @@ def read_role_by_id(rol_id: int, db: Session = Depends(get_db),current_user_id: 
 
 
 @router.delete("/{rol_id}/{id_user}")
-def delete_role_endpoint(rol_id: int, id_user: int, db: Session = Depends(get_db),current_user_id: int = Depends(get_current_user)):
+def delete_role_endpoint(
+    rol_id: int,
+    id_user: int,
+    db: Session = Depends(get_db),
+    current_user_id: int = Depends(get_current_user),
+):
     deleted_role = delete_role(db, rol_id, id_user)
     if not deleted_role:
         raise HTTPException(status_code=404, detail="Role not found")
@@ -93,8 +107,12 @@ def delete_role_endpoint(rol_id: int, id_user: int, db: Session = Depends(get_db
 
 
 @router.put("/{rol_id}/activate/{id_user}")
-def activate_role_endpoint(rol_id: int, id_user: int, db: Session = Depends(get_db),
-current_user_id: int = Depends(get_current_user)):
+def activate_role_endpoint(
+    rol_id: int,
+    id_user: int,
+    db: Session = Depends(get_db),
+    current_user_id: int = Depends(get_current_user),
+):
     activated_role = activate_role(db, rol_id, id_user)
     if not activated_role:
         raise HTTPException(status_code=404, detail="Role not found")
@@ -113,9 +131,11 @@ def update_existing_role(
     status: bool = Body(None, embed=True),
     user_id: int = Body(..., embed=True),
     db: Session = Depends(get_db),
-    current_user_id: int = Depends(get_current_user)
+    current_user_id: int = Depends(get_current_user),
 ):
-    updated_role = update_role(db=db, rol_id=rol_id, nombre=nombre, status=status, updated_by=user_id)
+    updated_role = update_role(
+        db=db, rol_id=rol_id, nombre=nombre, status=status, updated_by=user_id
+    )
 
     if not updated_role:
         raise HTTPException(status_code=404, detail="Role not found")
@@ -127,5 +147,5 @@ def update_existing_role(
         "created_at": updated_role.created_at,
         "updated_at": updated_role.updated_at,
         "updated_by": updated_role.updated_by,
-        "created_by": updated_role.created_by
+        "created_by": updated_role.created_by,
     }

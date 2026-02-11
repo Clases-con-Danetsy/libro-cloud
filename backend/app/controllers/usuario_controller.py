@@ -1,4 +1,4 @@
-from app.core.deps import get_current_user
+from app.core.deps import get_current_user, require_min_role
 from app.core.security import create_access_token
 from fastapi import APIRouter, Depends, Body, HTTPException
 from sqlalchemy.orm import Session
@@ -40,7 +40,7 @@ def create_new_user(
             password=password,
             rol_id=rol_id,
             created_by=created_by,
-            updated_by=updated_by
+            updated_by=updated_by,
         )
 
         return {
@@ -58,9 +58,12 @@ def create_new_user(
         raise HTTPException(status_code=400, detail=str(e))
 
 
-
 @users_router.get("/")
-def read_users(db: Session = Depends(get_db),current_user_id: int = Depends(get_current_user),):
+def read_users(
+    db: Session = Depends(get_db),
+    current_user_id: int = Depends(get_current_user),
+    usuario=Depends(require_min_role(2)),
+):
     results = (
         db.query(
             Usuario.id,
@@ -70,13 +73,12 @@ def read_users(db: Session = Depends(get_db),current_user_id: int = Depends(get_
             Usuario.updated_at,
             Rol.nombre.label("rol_name"),
             Usuario.created_by,
-            Usuario.updated_by
+            Usuario.updated_by,
         )
         .join(Rol)
         .all()
     )
 
-    
     user_ids = set()
     for r in results:
         if r.created_by:
@@ -84,11 +86,9 @@ def read_users(db: Session = Depends(get_db),current_user_id: int = Depends(get_
         if r.updated_by:
             user_ids.add(r.updated_by)
 
-   
     users = get_users_by_ids(db, list(user_ids))
     user_map = {u.id: u.username for u in users}
 
-    
     return [
         {
             "id": r.id,
@@ -105,7 +105,11 @@ def read_users(db: Session = Depends(get_db),current_user_id: int = Depends(get_
 
 
 @users_router.get("/{user_id}")
-def read_user_by_id(user_id: int, db: Session = Depends(get_db),current_user_id: int = Depends(get_current_user)):
+def read_user_by_id(
+    user_id: int,
+    db: Session = Depends(get_db),
+    current_user_id: int = Depends(get_current_user),
+):
     user = get_usuario_by_id(db, user_id)
     if not user:
         raise HTTPException(status_code=404, detail="Usuario no encontrado")
@@ -133,7 +137,7 @@ def update_existing_user(
         if updated_by is None:
             raise HTTPException(
                 status_code=400,
-                detail="updated_by es obligatorio para actualizar el usuario"
+                detail="updated_by es obligatorio para actualizar el usuario",
             )
 
         updated_user = update_usuario(
@@ -142,7 +146,7 @@ def update_existing_user(
             username=username,
             rol_id=rol_id,
             status=status,
-            updated_by=updated_by
+            updated_by=updated_by,
         )
 
         if not updated_user:
@@ -162,8 +166,14 @@ def update_existing_user(
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
 
+
 @users_router.delete("/{user_id}/{id_user}")
-def delete_user_endpoint(user_id: int, id_user: int, db: Session = Depends(get_db),current_user_id: int = Depends(get_current_user)):
+def delete_user_endpoint(
+    user_id: int,
+    id_user: int,
+    db: Session = Depends(get_db),
+    current_user_id: int = Depends(get_current_user),
+):
     deleted_user = delete_usuario(db, user_id, id_user)
 
     if not deleted_user:
@@ -177,8 +187,12 @@ def delete_user_endpoint(user_id: int, id_user: int, db: Session = Depends(get_d
 
 
 @users_router.put("/{user_id}/activate/{id_user}")
-def activate_user_endpoint(user_id: int, id_user: int, db: Session = Depends(get_db),
-current_user_id: int = Depends(get_current_user)):
+def activate_user_endpoint(
+    user_id: int,
+    id_user: int,
+    db: Session = Depends(get_db),
+    current_user_id: int = Depends(get_current_user),
+):
     activated_user = activate_usuario(db, user_id, id_user)
 
     if not activated_user:
@@ -197,8 +211,15 @@ def login(
 ):
     try:
         user_response = login_usuario(db, username, password)
-        access_token = create_access_token(data={"sub": str(user_response["id"])})  # ✅ LÍNEA NUEVA
-        return {"message": "Login successful", "user": user_response, "access_token": access_token, "token_type": "bearer"}  # ✅ LÍNEA MODIFICADA
+        access_token = create_access_token(
+            data={"sub": str(user_response["id"]), "role": user_response["role_id"]}
+        )  # ✅ LÍNEA NUEVA
+        return {
+            "message": "Login successful",
+            "user": user_response,
+            "access_token": access_token,
+            "token_type": "bearer",
+        }  # ✅ LÍNEA MODIFICADA
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
 
