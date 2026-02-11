@@ -1,20 +1,30 @@
 from datetime import datetime, timedelta
 from jose import jwt, JWTError
-from passlib.context import CryptContext
+from pwdlib import PasswordHash
 
 SECRET_KEY = "SUPER_SECRET_KEY_CAMBIALA"
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 60
 
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+# 🔐 Hash moderno (Argon2 recomendado)
+password_hash = PasswordHash.recommended()
 
-def hash_password(password: str):
-    return pwd_context.hash(password)
 
-def verify_password(plain, hashed):
-    return pwd_context.verify(plain, hashed)
+# =========================
+# PASSWORD
+# =========================
+def hash_password(password: str) -> str:
+    return password_hash.hash(password)
 
-def create_access_token(data: dict):
+
+def verify_password(plain: str, hashed: str) -> bool:
+    return password_hash.verify(plain, hashed)
+
+
+# =========================
+# JWT
+# =========================
+def create_access_token(data: dict) -> str:
     to_encode = data.copy()
     expire = datetime.utcnow() + timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
     to_encode.update({"exp": expire})
