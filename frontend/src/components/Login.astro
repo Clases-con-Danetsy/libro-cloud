@@ -111,21 +111,15 @@
 
         if (response.ok) {
           const responseData = await response.json();
-          
+
           // Guardar sesión
           localStorage.setItem("isLoggedIn", "true");
           localStorage.setItem("access_token", responseData.access_token);
-          
+
           if (responseData.user) {
             localStorage.setItem("user", JSON.stringify(responseData.user));
-            localStorage.setItem("user_id", responseData.user.id);
-            localStorage.setItem("username", responseData.user.username);
-            
-            if (responseData.user.rol_name) {
-              localStorage.setItem("rol_name", responseData.user.rol_name);
-            }
           }
-          
+
           window.location.replace("/dashboard");
         } else {
           try {
