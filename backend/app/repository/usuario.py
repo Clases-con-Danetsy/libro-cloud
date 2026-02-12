@@ -5,6 +5,7 @@ from app.models import Usuario, Rol
 
 def crear_usuario_inicial(db: Session):
 
+    # ✅ Crear rol Admin
     rol_admin = db.query(Rol).filter(Rol.nombre == "admin").first()
     if not rol_admin:
         rol_admin = Rol(nombre="admin", status=True, created_by=1, updated_by=1)
@@ -12,27 +13,43 @@ def crear_usuario_inicial(db: Session):
         db.commit()
         db.refresh(rol_admin)
 
+    # ✅ Crear rol Editor
+    rol_editor = db.query(Rol).filter(Rol.nombre == "editor").first()
+    if not rol_editor:
+        rol_editor = Rol(nombre="editor", status=True, created_by=1, updated_by=1)
+        db.add(rol_editor)
+        db.commit()
+        db.refresh(rol_editor)
+
+    # ✅ Crear rol Lector
+    rol_lector = db.query(Rol).filter(Rol.nombre == "lector").first()
+    if not rol_lector:
+        rol_lector = Rol(nombre="lector", status=True, created_by=1, updated_by=1)
+        db.add(rol_lector)
+        db.commit()
+        db.refresh(rol_lector)
+
+    # Usuario test (admin)
     usuario_test = db.query(Usuario).filter(Usuario.username == "test").first()
     password_hash = hash_password("123456")
 
     if usuario_test:
         usuario_test.password = password_hash
         usuario_test.status = True  
-        if usuario_test.rol_id != rol_admin.id: 
-            usuario_test.rol_id = rol_admin.id 
+        if usuario_test.rol_id != rol_admin.id:  # ✅ CORREGIDO: rol_id
+            usuario_test.rol_id = rol_admin.id  # ✅ CORREGIDO: rol_id
         db.commit()
     else:
         nuevo = Usuario(
             username="test",
             password=password_hash,
-            rol_id=rol_admin.id, 
+            rol_id=rol_admin.id,  # ✅ CORREGIDO: rol_id
             status=True,
             created_by=1,
             updated_by=1
         )
         db.add(nuevo)
         db.commit()
-
 
 def create_usuario(db: Session, username: str, password: str, rol_id: int, created_by: int, updated_by: int):
     rol = db.query(Rol).filter(Rol.id == rol_id).first()
