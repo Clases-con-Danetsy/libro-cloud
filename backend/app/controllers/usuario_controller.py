@@ -1,5 +1,6 @@
-from app.core.deps import get_current_user
 from app.core.security import create_access_token
+from app.core.deps import get_current_user
+from app.core.permissions import verificar_permiso  # ✅ NUEVA IMPORTACIÓN
 from fastapi import APIRouter, Depends, Body, HTTPException
 from sqlalchemy.orm import Session
 from app.database import get_db
@@ -29,6 +30,9 @@ def create_new_user(
     db: Session = Depends(get_db),
     current_user_id: int = Depends(get_current_user),
 ):
+    # ✅ Verificar permiso de CREAR
+    verificar_permiso(db, current_user_id, "crear")
+    
     existing_user = get_usuario_by_username(db, username=username)
     if existing_user:
         raise HTTPException(status_code=400, detail="Username already registered")
@@ -58,9 +62,14 @@ def create_new_user(
         raise HTTPException(status_code=400, detail=str(e))
 
 
-
 @users_router.get("/")
-def read_users(db: Session = Depends(get_db),current_user_id: int = Depends(get_current_user),):
+def read_users(
+    db: Session = Depends(get_db),
+    current_user_id: int = Depends(get_current_user),
+):
+    # ✅ Verificar permiso de VER (todos pueden ver)
+    verificar_permiso(db, current_user_id, "ver")
+    
     results = (
         db.query(
             Usuario.id,
@@ -76,7 +85,6 @@ def read_users(db: Session = Depends(get_db),current_user_id: int = Depends(get_
         .all()
     )
 
-    
     user_ids = set()
     for r in results:
         if r.created_by:
@@ -84,11 +92,9 @@ def read_users(db: Session = Depends(get_db),current_user_id: int = Depends(get_
         if r.updated_by:
             user_ids.add(r.updated_by)
 
-   
     users = get_users_by_ids(db, list(user_ids))
     user_map = {u.id: u.username for u in users}
 
-    
     return [
         {
             "id": r.id,
@@ -105,7 +111,14 @@ def read_users(db: Session = Depends(get_db),current_user_id: int = Depends(get_
 
 
 @users_router.get("/{user_id}")
-def read_user_by_id(user_id: int, db: Session = Depends(get_db),current_user_id: int = Depends(get_current_user)):
+def read_user_by_id(
+    user_id: int,
+    db: Session = Depends(get_db),
+    current_user_id: int = Depends(get_current_user),
+):
+    # ✅ Verificar permiso de VER
+    verificar_permiso(db, current_user_id, "ver")
+    
     user = get_usuario_by_id(db, user_id)
     if not user:
         raise HTTPException(status_code=404, detail="Usuario no encontrado")
@@ -129,6 +142,9 @@ def update_existing_user(
     db: Session = Depends(get_db),
     current_user_id: int = Depends(get_current_user),
 ):
+    # ✅ Verificar permiso de EDITAR
+    verificar_permiso(db, current_user_id, "editar")
+    
     try:
         if updated_by is None:
             raise HTTPException(
@@ -162,8 +178,17 @@ def update_existing_user(
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
 
+
 @users_router.delete("/{user_id}/{id_user}")
-def delete_user_endpoint(user_id: int, id_user: int, db: Session = Depends(get_db),current_user_id: int = Depends(get_current_user)):
+def delete_user_endpoint(
+    user_id: int,
+    id_user: int,
+    db: Session = Depends(get_db),
+    current_user_id: int = Depends(get_current_user),
+):
+    # ✅ Verificar permiso de ACTIVAR/DESACTIVAR (solo Admin)
+    verificar_permiso(db, current_user_id, "activar_desactivar")
+    
     deleted_user = delete_usuario(db, user_id, id_user)
 
     if not deleted_user:
@@ -177,8 +202,15 @@ def delete_user_endpoint(user_id: int, id_user: int, db: Session = Depends(get_d
 
 
 @users_router.put("/{user_id}/activate/{id_user}")
-def activate_user_endpoint(user_id: int, id_user: int, db: Session = Depends(get_db),
-current_user_id: int = Depends(get_current_user)):
+def activate_user_endpoint(
+    user_id: int,
+    id_user: int,
+    db: Session = Depends(get_db),
+    current_user_id: int = Depends(get_current_user),
+):
+    # ✅ Verificar permiso de ACTIVAR/DESACTIVAR (solo Admin)
+    verificar_permiso(db, current_user_id, "activar_desactivar")
+    
     activated_user = activate_usuario(db, user_id, id_user)
 
     if not activated_user:
@@ -193,12 +225,14 @@ current_user_id: int = Depends(get_current_user)):
 
 @router.post("/login", tags=["Usuarios"])
 def login(
-    username: str = Body(...), password: str = Body(...), db: Session = Depends(get_db)
+    username: str = Body(...),
+    password: str = Body(...),
+    db: Session = Depends(get_db)
 ):
     try:
         user_response = login_usuario(db, username, password)
-        access_token = create_access_token(data={"sub": str(user_response["id"])})  # ✅ LÍNEA NUEVA
-        return {"message": "Login successful", "user": user_response, "access_token": access_token, "token_type": "bearer"}  # ✅ LÍNEA MODIFICADA
+        access_token = create_access_token(data={"sub": str(user_response["id"])})
+        return {"message": "Login successful", "user": user_response, "access_token": access_token, "token_type": "bearer"}
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
 
