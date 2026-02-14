@@ -10,6 +10,7 @@ origins = [
     "http://localhost:4321",
     "http://127.0.0.1:4321",  # ✅ Agregar esta línea
     "http://localhost:3000",
+    "https://libro-cloud.netlify.app",
 ]
 
 app.add_middleware(
@@ -19,6 +20,7 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
 
 @app.on_event("startup")
 def startup_event():
@@ -32,9 +34,11 @@ def startup_event():
 
     print("✨ Usuario inicial creado (test / 123)")
 
+
 @app.get("/")
 def index():
     return {"status": "Backend Libro Cloud listo"}
+
 
 app.include_router(usuario_controller.router)
 app.include_router(rol_controller.router)
