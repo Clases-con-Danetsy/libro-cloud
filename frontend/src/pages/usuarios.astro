@@ -1,7 +1,7 @@
 ---
 import MainLayout from "../layouts/MainLayout.astro";
 import Sidebar from "../components/Sidebar.astro";
-import Menu from "../components/Menu.astro";
+import Menu from "../components/menu.astro";
 ---
 
 <MainLayout title="Usuarios">
@@ -13,7 +13,6 @@ import Menu from "../components/Menu.astro";
 
       <main class="flex-1 p-10">
         <div class="max-w-6xl mx-auto">
-
           <div class="flex justify-end mb-4">
             <a
               href="/usuarios_create"
@@ -29,18 +28,45 @@ import Menu from "../components/Menu.astro";
             <table class="min-w-full leading-normal">
               <thead>
                 <tr>
-                  <th class="px-5 py-3 bg-gray-100 border-b text-xs font-semibold">ID</th>
-                  <th class="px-5 py-3 bg-gray-100 border-b text-xs font-semibold">Usuario</th>
-                  <th class="px-5 py-3 bg-gray-100 border-b text-xs font-semibold">Rol</th>
-                  <th class="px-5 py-3 bg-gray-100 border-b text-xs font-semibold">Creado</th>
-                  <th class="px-5 py-3 bg-gray-100 border-b text-xs font-semibold">Actualizado</th>
+                  <th
+                    class="px-5 py-3 bg-gray-100 border-b text-xs font-semibold"
+                    >ID</th
+                  >
+                  <th
+                    class="px-5 py-3 bg-gray-100 border-b text-xs font-semibold"
+                    >Usuario</th
+                  >
+                  <th
+                    class="px-5 py-3 bg-gray-100 border-b text-xs font-semibold"
+                    >Rol</th
+                  >
+                  <th
+                    class="px-5 py-3 bg-gray-100 border-b text-xs font-semibold"
+                    >Creado</th
+                  >
+                  <th
+                    class="px-5 py-3 bg-gray-100 border-b text-xs font-semibold"
+                    >Actualizado</th
+                  >
 
                   <!-- ✅ NUEVO -->
-                  <th class="px-5 py-3 bg-gray-100 border-b text-xs font-semibold">Creado por</th>
-                  <th class="px-5 py-3 bg-gray-100 border-b text-xs font-semibold">Actualizado por</th>
+                  <th
+                    class="px-5 py-3 bg-gray-100 border-b text-xs font-semibold"
+                    >Creado por</th
+                  >
+                  <th
+                    class="px-5 py-3 bg-gray-100 border-b text-xs font-semibold"
+                    >Actualizado por</th
+                  >
 
-                  <th class="px-5 py-3 bg-gray-100 border-b text-xs font-semibold">Estado</th>
-                  <th class="px-5 py-3 bg-gray-100 border-b text-xs font-semibold">Acciones</th>
+                  <th
+                    class="px-5 py-3 bg-gray-100 border-b text-xs font-semibold"
+                    >Estado</th
+                  >
+                  <th
+                    class="px-5 py-3 bg-gray-100 border-b text-xs font-semibold"
+                    >Acciones</th
+                  >
                 </tr>
               </thead>
               <tbody id="usuarios-table-body"></tbody>
@@ -62,11 +88,17 @@ import Menu from "../components/Menu.astro";
       </p>
 
       <div class="flex justify-end gap-3">
-        <button onclick="closeModal()" class="cursor-pointer px-5 py-2 rounded-full border">
+        <button
+          onclick="closeModal()"
+          class="cursor-pointer px-5 py-2 rounded-full border"
+        >
           Cancelar
         </button>
 
-        <button onclick="confirmDeactivate()" class="cursor-pointer px-5 py-2 rounded-full bg-pink-500 text-white">
+        <button
+          onclick="confirmDeactivate()"
+          class="cursor-pointer px-5 py-2 rounded-full bg-pink-500 text-white"
+        >
           Desactivar
         </button>
       </div>
@@ -105,9 +137,9 @@ import Menu from "../components/Menu.astro";
         {
           method: "PUT",
           headers: {
-            Authorization: `Bearer ${localStorage.getItem("access_token")}`, 
+            Authorization: `Bearer ${localStorage.getItem("access_token")}`,
           },
-        }
+        },
       );
 
       if (!response.ok) {
@@ -116,7 +148,7 @@ import Menu from "../components/Menu.astro";
 
       const data = await response.json();
       console.log("Usuario activado:", data);
-      
+
       loadUsuarios();
     } catch (error) {
       console.error("Error:", error);
@@ -156,9 +188,9 @@ import Menu from "../components/Menu.astro";
         {
           method: "DELETE",
           headers: {
-            Authorization: `Bearer ${localStorage.getItem("access_token")}`, 
+            Authorization: `Bearer ${localStorage.getItem("access_token")}`,
           },
-        }
+        },
       );
 
       if (!response.ok) {
@@ -181,10 +213,10 @@ import Menu from "../components/Menu.astro";
     try {
       const res = await fetch("http://localhost:8000/usuarios", {
         headers: {
-          Authorization: `Bearer ${localStorage.getItem("access_token")}`, 
+          Authorization: `Bearer ${localStorage.getItem("access_token")}`,
         },
       });
-      
+
       if (!res.ok) {
         throw new Error("Error al cargar usuarios");
       }

@@ -1,7 +1,7 @@
 ---
 import MainLayout from "../layouts/MainLayout.astro";
 import Sidebar from "../components/Sidebar.astro";
-import Menu from "../components/Menu.astro";
+import Menu from "../components/menu.astro";
 ---
 
 <MainLayout title="Editar Usuario">
@@ -105,7 +105,7 @@ import Menu from "../components/Menu.astro";
         Authorization: `Bearer ${localStorage.getItem("access_token")}`,
       },
     });
-    
+
     if (!res.ok) {
       alert("No se pudo cargar el usuario");
       return;
@@ -134,7 +134,7 @@ import Menu from "../components/Menu.astro";
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${localStorage.getItem("access_token")}`, 
+          Authorization: `Bearer ${localStorage.getItem("access_token")}`,
         },
         body: JSON.stringify({
           username: usernameInput.value,
@@ -149,7 +149,10 @@ import Menu from "../components/Menu.astro";
       } else {
         const errorData = await res.json();
         console.error("Error del servidor:", errorData);
-        alert("Error al actualizar usuario: " + (errorData.detail || "Error desconocido"));
+        alert(
+          "Error al actualizar usuario: " +
+            (errorData.detail || "Error desconocido"),
+        );
       }
     } catch (error) {
       console.error("Error:", error);
