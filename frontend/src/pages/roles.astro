@@ -180,8 +180,6 @@ import Menu from "../components/Menu.astro";
   async function confirmDeactivate() {
     if (!roleToDeactivate) return;
 
-    const loggedUserId = localStorage.getItem("user_id");
-
     if (!loggedUserId) {
       alert("No se pudo obtener el ID del usuario logueado");
       closeModal();
