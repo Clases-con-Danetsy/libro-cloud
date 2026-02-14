@@ -1,3 +1,7 @@
+---
+const API_BASE_URL = import.meta.env.PUBLIC_API_BASE_URL;
+---
+
 <div class="relative min-h-[80vh] w-full flex items-center justify-center p-4">
   <!-- Elegant background with soft abstract shapes & responsive positioning -->
   <div class="absolute inset-0 overflow-hidden rounded-2xl pointer-events-none">
@@ -83,7 +87,8 @@
   </div>
 </div>
 
-<script is:inline>
+<script type="module" define:vars={{ API_BASE_URL }}>
+  console.log(API_BASE_URL);
   const form = document.getElementById("login-form");
   const errorMessage = document.getElementById("error-message");
 
@@ -101,7 +106,7 @@
       }
 
       try {
-        const response = await fetch("http://127.0.0.1:8000/login", {
+        const response = await fetch(`${API_BASE_URL}/login`, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
@@ -140,7 +145,7 @@
         console.error("Error:", error);
         if (errorMessage) {
           errorMessage.textContent =
-            "Error de conexión con el servidor backend (http://127.0.0.1:8000)";
+            "Error de conexión con el servidor backend (${API_BASE_URL})";
           errorMessage.classList.remove("hidden");
         }
       }

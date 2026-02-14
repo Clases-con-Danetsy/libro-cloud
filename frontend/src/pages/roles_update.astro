@@ -2,6 +2,7 @@
 import MainLayout from "../layouts/MainLayout.astro";
 import Sidebar from "../components/Sidebar.astro";
 import Menu from "../components/Menu.astro";
+const API_BASE_URL = import.meta.env.PUBLIC_API_BASE_URL;
 ---
 
 <MainLayout title="Editar Rol">
@@ -50,7 +51,7 @@ import Menu from "../components/Menu.astro";
   </div>
 </MainLayout>
 
-<script is:inline>
+<script type="module" define:vars={{ API_BASE_URL }}>
   const { loggedUserId, rol_id } = window.Verificacion.getUserData();
 
   const params = new URLSearchParams(window.location.search);
@@ -68,7 +69,7 @@ import Menu from "../components/Menu.astro";
   const usuarioActualId = JSON.parse(usuarioActual).id;
 
   async function loadRol() {
-    const res = await fetch(`http://localhost:8000/roles/${rolId}`, {
+    const res = await fetch(`${API_BASE_URL}/roles/${rolId}`, {
       headers: {
         Authorization: `Bearer ${localStorage.getItem("access_token")}`,
       },
@@ -86,7 +87,7 @@ import Menu from "../components/Menu.astro";
   form.addEventListener("submit", async (e) => {
     e.preventDefault();
 
-    const res = await fetch(`http://localhost:8000/roles/${rolId}`, {
+    const res = await fetch(`${API_BASE_URL}/roles/${rolId}`, {
       method: "PUT",
       headers: {
         "Content-Type": "application/json",

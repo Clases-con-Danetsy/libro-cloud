@@ -2,6 +2,7 @@
 import MainLayout from "../layouts/MainLayout.astro";
 import Sidebar from "../components/Sidebar.astro";
 import Menu from "../components/Menu.astro";
+const API_BASE_URL = import.meta.env.PUBLIC_API_BASE_URL;
 ---
 
 <MainLayout title="Roles">
@@ -97,7 +98,8 @@ import Menu from "../components/Menu.astro";
   </div>
 </MainLayout>
 
-<script is:inline>
+<script type="module" define:vars={{ API_BASE_URL }}>
+  console.log(API_BASE_URL);
   const { loggedUserId, rol_id } = window.Verificacion.getUserData();
   if (localStorage.getItem("isLoggedIn") !== "true") {
     window.location.replace("/");
@@ -137,7 +139,7 @@ import Menu from "../components/Menu.astro";
 
     try {
       const response = await fetch(
-        `http://localhost:8000/roles/${id}/activate/${loggedUserId}`,
+        `${API_BASE_URL}/roles/${id}/activate/${loggedUserId}`,
         {
           method: "PUT",
           headers: {
@@ -188,7 +190,7 @@ import Menu from "../components/Menu.astro";
 
     try {
       const response = await fetch(
-        `http://localhost:8000/roles/${roleToDeactivate}/${loggedUserId}`,
+        `${API_BASE_URL}/roles/${roleToDeactivate}/${loggedUserId}`,
         {
           method: "DELETE",
           headers: {
@@ -215,7 +217,7 @@ import Menu from "../components/Menu.astro";
 
   async function loadRoles() {
     try {
-      const res = await fetch("http://localhost:8000/roles", {
+      const res = await fetch(`${API_BASE_URL}/roles`, {
         headers: {
           Authorization: `Bearer ${localStorage.getItem("access_token")}`,
         },
@@ -291,6 +293,11 @@ import Menu from "../components/Menu.astro";
       alert("No se pudieron cargar los roles");
     }
   }
-
+  window.editRole = editRole;
+  window.loadRoles = loadRoles;
+  window.activateRole = activateRole;
+  window.deactivateRole = deactivateRole;
+  window.closeModal = closeModal;
+  window.confirmDeactivate = confirmDeactivate;
   loadRoles();
 </script>
