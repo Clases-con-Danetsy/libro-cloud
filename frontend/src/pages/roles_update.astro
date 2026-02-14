@@ -51,6 +51,8 @@ import Menu from "../components/Menu.astro";
 </MainLayout>
 
 <script is:inline>
+  const { loggedUserId, rol_id } = window.Verificacion.getUserData();
+
   const params = new URLSearchParams(window.location.search);
   const rolId = params.get("id");
 
@@ -71,7 +73,7 @@ import Menu from "../components/Menu.astro";
         Authorization: `Bearer ${localStorage.getItem("access_token")}`,
       },
     });
-    
+
     if (!res.ok) {
       alert("No se pudo cargar el rol");
       return;
@@ -103,6 +105,12 @@ import Menu from "../components/Menu.astro";
       alert("Error al actualizar el rol");
     }
   });
-
-  loadRol();
+  window.onload = function () {
+    console.log(rol_id);
+    if (window.Verificacion.canUpdate(rol_id)) {
+      alert("No tienes permiso para editar este rol");
+      window.location.href = "/roles";
+    }
+    loadRol();
+  };
 </script>

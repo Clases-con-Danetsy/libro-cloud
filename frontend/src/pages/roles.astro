@@ -13,7 +13,6 @@ import Menu from "../components/Menu.astro";
 
       <main class="flex-1 p-10">
         <div class="max-w-6xl mx-auto">
-
           <div class="flex justify-end mb-4">
             <a
               href="/roles_create"
@@ -29,14 +28,38 @@ import Menu from "../components/Menu.astro";
             <table class="min-w-full leading-normal">
               <thead>
                 <tr>
-                  <th class="px-5 py-3 bg-gray-100 border-b text-xs font-semibold">ID</th>
-                  <th class="px-5 py-3 bg-gray-100 border-b text-xs font-semibold">Nombre</th>
-                  <th class="px-5 py-3 bg-gray-100 border-b text-xs font-semibold">Creado</th>
-                  <th class="px-5 py-3 bg-gray-100 border-b text-xs font-semibold">Actualizado</th>
-                  <th class="px-5 py-3 bg-gray-100 border-b text-xs font-semibold">Creado por</th>
-                  <th class="px-5 py-3 bg-gray-100 border-b text-xs font-semibold">Actualizado por</th>
-                  <th class="px-5 py-3 bg-gray-100 border-b text-xs font-semibold">Estado</th>
-                  <th class="px-5 py-3 bg-gray-100 border-b text-xs font-semibold">Acciones</th>
+                  <th
+                    class="px-5 py-3 bg-gray-100 border-b text-xs font-semibold"
+                    >ID</th
+                  >
+                  <th
+                    class="px-5 py-3 bg-gray-100 border-b text-xs font-semibold"
+                    >Nombre</th
+                  >
+                  <th
+                    class="px-5 py-3 bg-gray-100 border-b text-xs font-semibold"
+                    >Creado</th
+                  >
+                  <th
+                    class="px-5 py-3 bg-gray-100 border-b text-xs font-semibold"
+                    >Actualizado</th
+                  >
+                  <th
+                    class="px-5 py-3 bg-gray-100 border-b text-xs font-semibold"
+                    >Creado por</th
+                  >
+                  <th
+                    class="px-5 py-3 bg-gray-100 border-b text-xs font-semibold"
+                    >Actualizado por</th
+                  >
+                  <th
+                    class="px-5 py-3 bg-gray-100 border-b text-xs font-semibold"
+                    >Estado</th
+                  >
+                  <th
+                    class="px-5 py-3 bg-gray-100 border-b text-xs font-semibold"
+                    >Acciones</th
+                  >
                 </tr>
               </thead>
 
@@ -57,10 +80,16 @@ import Menu from "../components/Menu.astro";
       <p class="mb-6">¿Deseas desactivar este rol?</p>
 
       <div class="flex justify-end gap-3">
-        <button onclick="closeModal()" class="cursor-pointer px-5 py-2 border rounded-full">
+        <button
+          onclick="closeModal()"
+          class="cursor-pointer px-5 py-2 border rounded-full"
+        >
           Cancelar
         </button>
-        <button onclick="confirmDeactivate()" class="cursor-pointer px-5 py-2 bg-pink-500 text-white rounded-full">
+        <button
+          onclick="confirmDeactivate()"
+          class="cursor-pointer px-5 py-2 bg-pink-500 text-white rounded-full"
+        >
           Desactivar
         </button>
       </div>
@@ -69,6 +98,7 @@ import Menu from "../components/Menu.astro";
 </MainLayout>
 
 <script is:inline>
+  const { loggedUserId, rol_id } = window.Verificacion.getUserData();
   if (localStorage.getItem("isLoggedIn") !== "true") {
     window.location.replace("/");
   }
@@ -88,12 +118,18 @@ import Menu from "../components/Menu.astro";
   }
 
   function editRole(id) {
+    if (window.Verificacion.canUpdate(rol_id)) {
+      alert("No tienes permiso para editar este rol");
+      return;
+    }
     window.location.href = `/roles_update?id=${id}`;
   }
 
   async function activateRole(id) {
-    const loggedUserId = localStorage.getItem("user_id");
-
+    if (window.Verificacion.canActivate(rol_id)) {
+      alert("No tienes permiso para activar este rol");
+      return;
+    }
     if (!loggedUserId) {
       alert("No se pudo obtener el ID del usuario logueado");
       return;
@@ -105,9 +141,9 @@ import Menu from "../components/Menu.astro";
         {
           method: "PUT",
           headers: {
-            Authorization: `Bearer ${localStorage.getItem("access_token")}`, 
+            Authorization: `Bearer ${localStorage.getItem("access_token")}`,
           },
-        }
+        },
       );
 
       if (!response.ok) {
@@ -116,7 +152,7 @@ import Menu from "../components/Menu.astro";
 
       const data = await response.json();
       console.log("Rol activado:", data);
-      
+
       loadRoles();
     } catch (error) {
       console.error("Error:", error);
@@ -125,9 +161,14 @@ import Menu from "../components/Menu.astro";
   }
 
   function deactivateRole(id) {
-    roleToDeactivate = id;
-    document.getElementById("confirm-modal").classList.remove("hidden");
-    document.getElementById("confirm-modal").classList.add("flex");
+    if (window.Verificacion.canDeactivate(rol_id)) {
+      alert("No tienes permiso para desactivar este rol");
+      return;
+    } else {
+      roleToDeactivate = id;
+      document.getElementById("confirm-modal").classList.remove("hidden");
+      document.getElementById("confirm-modal").classList.add("flex");
+    }
   }
 
   function closeModal() {
@@ -135,7 +176,6 @@ import Menu from "../components/Menu.astro";
     document.getElementById("confirm-modal").classList.add("hidden");
     document.getElementById("confirm-modal").classList.remove("flex");
   }
-
 
   async function confirmDeactivate() {
     if (!roleToDeactivate) return;
@@ -154,9 +194,9 @@ import Menu from "../components/Menu.astro";
         {
           method: "DELETE",
           headers: {
-            Authorization: `Bearer ${localStorage.getItem("access_token")}`, 
+            Authorization: `Bearer ${localStorage.getItem("access_token")}`,
           },
-        }
+        },
       );
 
       if (!response.ok) {
@@ -179,10 +219,10 @@ import Menu from "../components/Menu.astro";
     try {
       const res = await fetch("http://localhost:8000/roles", {
         headers: {
-          Authorization: `Bearer ${localStorage.getItem("access_token")}`, 
+          Authorization: `Bearer ${localStorage.getItem("access_token")}`,
         },
       });
-      
+
       if (!res.ok) {
         throw new Error("Error al cargar roles");
       }

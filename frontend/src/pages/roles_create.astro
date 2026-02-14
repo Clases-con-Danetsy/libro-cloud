@@ -52,6 +52,7 @@ import Menu from "../components/Menu.astro";
 </MainLayout>
 
 <script is:inline>
+  const { loggedUserId, rol_id } = window.Verificacion.getUserData();
   const form = document.getElementById("rol-form");
   const nombreInput = document.getElementById("nombre");
 
@@ -65,11 +66,11 @@ import Menu from "../components/Menu.astro";
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        Authorization: `Bearer ${localStorage.getItem("access_token")}`, 
+        Authorization: `Bearer ${localStorage.getItem("access_token")}`,
       },
       body: JSON.stringify({
         nombre: nombreInput.value,
-        user_id: usuarioActualId
+        user_id: usuarioActualId,
       }),
     });
 
@@ -80,4 +81,11 @@ import Menu from "../components/Menu.astro";
       alert("Error al crear el rol");
     }
   });
+  window.onload = function () {
+    console.log(rol_id);
+    if (window.Verificacion.canCreate(rol_id)) {
+      alert("No tienes permiso para crear este rol");
+      window.location.href = "/roles";
+    }
+  };
 </script>

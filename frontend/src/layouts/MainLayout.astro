@@ -19,3 +19,32 @@ const { title = "Libro Cloud" } = Astro.props;
     <slot />
   </body>
 </html>
+<script is:inline>
+  window.Verificacion = {
+    getUserData() {
+      const loggedUser = JSON.parse(localStorage.getItem("user"));
+      if (!loggedUser) {
+        return { loggedUserId: null, rol_id: null };
+      }
+      return {
+        loggedUserId: loggedUser.id,
+        rol_id: loggedUser.role_id,
+      };
+    },
+
+    canDeactivate(rol_id) {
+      return rol_id > 2;
+    },
+
+    canActivate(rol_id) {
+      return rol_id > 2;
+    },
+    canUpdate(rol_id) {
+      return rol_id > 1;
+    },
+
+    canCreate(rol_id) {
+      return rol_id !== 1;
+    },
+  };
+</script>
