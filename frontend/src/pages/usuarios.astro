@@ -88,7 +88,7 @@ const API_BASE_URL = import.meta.env.PUBLIC_API_BASE_URL;
 
   function editUser(id) {
     if (window.Verificacion.canUpdate(rol_id)) {
-      alert("No tienes permiso para editar este usuario");
+      alert("No tienes permisos para editar usuarios. Solo usuarios con rol Editor o Admin pueden realizar esta acción.");
       return;
     }
     window.location.href = `/usuarios_update?id=${id}`;
@@ -96,7 +96,7 @@ const API_BASE_URL = import.meta.env.PUBLIC_API_BASE_URL;
 
   async function activateUser(id) {
     if (window.Verificacion.canActivate(rol_id)) {
-      alert("No tienes permiso para activar este usuario");
+      alert("No tienes permisos para activar/desactivar usuarios. Solo usuarios con rol Admin pueden realizar esta acción.");
       return;
     }
 
@@ -117,7 +117,10 @@ const API_BASE_URL = import.meta.env.PUBLIC_API_BASE_URL;
       );
 
       if (!response.ok) {
-        throw new Error("Error al activar usuario");
+        const errorData = await response.json();
+        // Mostrar el mensaje de error del backend
+        alert(errorData.detail || "No tienes permisos para activar usuarios");
+        return;
       }
 
       const data = await response.json();
@@ -126,13 +129,13 @@ const API_BASE_URL = import.meta.env.PUBLIC_API_BASE_URL;
       loadUsuarios();
     } catch (error) {
       console.error("Error:", error);
-      alert("No se pudo activar el usuario");
+      alert("No tienes permisos para realizar esta acción");
     }
   }
 
   function deactivateUser(id) {
     if (window.Verificacion.canDeactivate(rol_id)) {
-      alert("No tienes permiso para desactivar este usuario");
+      alert("No tienes permisos para activar/desactivar usuarios. Solo usuarios con rol Admin pueden realizar esta acción.");
       return;
     } else {
       userToDeactivate = id;
@@ -170,7 +173,11 @@ const API_BASE_URL = import.meta.env.PUBLIC_API_BASE_URL;
       );
 
       if (!response.ok) {
-        throw new Error("Error al desactivar usuario");
+        const errorData = await response.json();
+        // Mostrar el mensaje de error del backend
+        alert(errorData.detail || "No tienes permisos para desactivar usuarios");
+        closeModal();
+        return;
       }
 
       const data = await response.json();
@@ -180,7 +187,7 @@ const API_BASE_URL = import.meta.env.PUBLIC_API_BASE_URL;
       loadUsuarios();
     } catch (error) {
       console.error("Error:", error);
-      alert("No se pudo desactivar el usuario");
+      alert("No tienes permisos para realizar esta acción");
       closeModal();
     }
   }

@@ -37,7 +37,7 @@ const API_BASE_URL = import.meta.env.PUBLIC_API_BASE_URL;
                 Guardar cambios
               </button>
 
-              <a
+              
                 href="/roles"
                 class="px-4 py-2 rounded-md border border-gray-300 hover:bg-gray-100"
               >
@@ -52,7 +52,17 @@ const API_BASE_URL = import.meta.env.PUBLIC_API_BASE_URL;
 </MainLayout>
 
 <script type="module" define:vars={{ API_BASE_URL }}>
+  if (localStorage.getItem("isLoggedIn") !== "true") {
+    window.location.replace("/");
+  }
+
+  // ✅ Validar permisos al cargar la página
   const { loggedUserId, rol_id } = window.Verificacion.getUserData();
+  
+  if (window.Verificacion.canUpdate(rol_id)) {
+    alert("No tienes permisos para editar roles. Solo usuarios con rol Editor o Admin pueden realizar esta acción.");
+    window.location.href = "/roles";
+  }
 
   const params = new URLSearchParams(window.location.search);
   const rolId = params.get("id");
@@ -64,9 +74,6 @@ const API_BASE_URL = import.meta.env.PUBLIC_API_BASE_URL;
 
   const nombreInput = document.getElementById("nombre");
   const form = document.getElementById("rol-form");
-
-  const usuarioActual = localStorage.getItem("user");
-  const usuarioActualId = JSON.parse(usuarioActual).id;
 
   async function loadRol() {
     const res = await fetch(`${API_BASE_URL}/roles/${rolId}`, {
@@ -95,7 +102,7 @@ const API_BASE_URL = import.meta.env.PUBLIC_API_BASE_URL;
       },
       body: JSON.stringify({
         nombre: nombreInput.value,
-        user_id: usuarioActualId,
+        user_id: Number(loggedUserId),
       }),
     });
 
@@ -103,15 +110,10 @@ const API_BASE_URL = import.meta.env.PUBLIC_API_BASE_URL;
       alert("Rol actualizado correctamente");
       window.location.href = "/roles";
     } else {
-      alert("Error al actualizar el rol");
+      const errorData = await res.json();
+      alert(errorData.detail || "Error al actualizar el rol");
     }
   });
-  window.onload = function () {
-    console.log(rol_id);
-    if (window.Verificacion.canUpdate(rol_id)) {
-      alert("No tienes permiso para editar este rol");
-      window.location.href = "/roles";
-    }
-    loadRol();
-  };
+
+  loadRol();
 </script>

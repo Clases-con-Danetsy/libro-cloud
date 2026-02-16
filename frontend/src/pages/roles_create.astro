@@ -38,7 +38,7 @@ const API_BASE_URL = import.meta.env.PUBLIC_API_BASE_URL;
                 Guardar
               </button>
 
-              <a
+              
                 href="/roles"
                 class="cursor-pointer px-4 py-2 rounded-md border border-gray-300 hover:bg-gray-100"
               >
@@ -53,12 +53,20 @@ const API_BASE_URL = import.meta.env.PUBLIC_API_BASE_URL;
 </MainLayout>
 
 <script type="module" define:vars={{ API_BASE_URL }}>
+  if (localStorage.getItem("isLoggedIn") !== "true") {
+    window.location.replace("/");
+  }
+
+  // ✅ Validar permisos al cargar la página
   const { loggedUserId, rol_id } = window.Verificacion.getUserData();
+  
+  if (window.Verificacion.canCreate(rol_id)) {
+    alert("No tienes permisos para crear roles. Solo usuarios con rol Editor o Admin pueden realizar esta acción.");
+    window.location.href = "/roles";
+  }
+
   const form = document.getElementById("rol-form");
   const nombreInput = document.getElementById("nombre");
-
-  const usuarioActual = localStorage.getItem("user");
-  const usuarioActualId = JSON.parse(usuarioActual).id;
 
   form.addEventListener("submit", async (e) => {
     e.preventDefault();
@@ -71,7 +79,7 @@ const API_BASE_URL = import.meta.env.PUBLIC_API_BASE_URL;
       },
       body: JSON.stringify({
         nombre: nombreInput.value,
-        user_id: usuarioActualId,
+        user_id: Number(loggedUserId),
       }),
     });
 
@@ -79,14 +87,8 @@ const API_BASE_URL = import.meta.env.PUBLIC_API_BASE_URL;
       alert("Rol creado correctamente");
       window.location.href = "/roles";
     } else {
-      alert("Error al crear el rol");
+      const errorData = await res.json();
+      alert(errorData.detail || "Error al crear el rol");
     }
   });
-  window.onload = function () {
-    console.log(rol_id);
-    if (window.Verificacion.canCreate(rol_id)) {
-      alert("No tienes permiso para crear este rol");
-      window.location.href = "/roles";
-    }
-  };
 </script>

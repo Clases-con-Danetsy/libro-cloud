@@ -2,6 +2,7 @@
 import MainLayout from "../layouts/MainLayout.astro";
 import Sidebar from "../components/Sidebar.astro";
 import Menu from "../components/menu.astro";
+const API_BASE_URL = import.meta.env.PUBLIC_API_BASE_URL;
 ---
 
 <MainLayout title="Crear Usuario">
@@ -56,7 +57,7 @@ import Menu from "../components/menu.astro";
                 Guardar
               </button>
 
-              <a
+              
                 href="/usuarios"
                 class="px-5 py-2 rounded-full border border-gray-300 hover:bg-gray-100 transition"
               >
@@ -70,20 +71,26 @@ import Menu from "../components/menu.astro";
   </div>
 </MainLayout>
 
-<script is:inline>
+<script type="module" define:vars={{ API_BASE_URL }}>
   if (localStorage.getItem("isLoggedIn") !== "true") {
     window.location.replace("/");
+  }
+
+  // ✅ Validar permisos al cargar la página
+  const { loggedUserId, rol_id } = window.Verificacion.getUserData();
+  
+  if (window.Verificacion.canCreate(rol_id)) {
+    alert("No tienes permisos para crear usuarios. Solo usuarios con rol Editor o Admin pueden realizar esta acción.");
+    window.location.href = "/usuarios";
   }
 
   const form = document.getElementById("usuario-form");
   const usernameInput = document.getElementById("username");
   const passwordInput = document.getElementById("password");
   const rolSelect = document.getElementById("rol");
-  const usuarioActual = localStorage.getItem("user");
-  const usuarioActualId = JSON.parse(usuarioActual).id;
 
   async function loadRoles() {
-    const res = await fetch("http://localhost:8000/roles", {
+    const res = await fetch(`${API_BASE_URL}/roles`, {
       headers: {
         Authorization: `Bearer ${localStorage.getItem("access_token")}`,
       },
@@ -103,7 +110,7 @@ import Menu from "../components/menu.astro";
   form.addEventListener("submit", async (e) => {
     e.preventDefault();
 
-    const res = await fetch("http://localhost:8000/usuarios", {
+    const res = await fetch(`${API_BASE_URL}/usuarios`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -113,16 +120,16 @@ import Menu from "../components/menu.astro";
         username: usernameInput.value,
         password: passwordInput.value,
         rol_id: Number(rolSelect.value),
-        user_id: usuarioActualId,
-        created_by: usuarioActualId,
-        updated_by: usuarioActualId,
+        created_by: Number(loggedUserId),
+        updated_by: Number(loggedUserId),
       }),
     });
 
     if (res.ok) {
       window.location.href = "/usuarios";
     } else {
-      alert("Error al crear el usuario");
+      const errorData = await res.json();
+      alert(errorData.detail || "Error al crear el usuario");
     }
   });
 
