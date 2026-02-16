@@ -78,7 +78,7 @@ const API_BASE_URL = import.meta.env.PUBLIC_API_BASE_URL;
         Iniciar Sesión
       </button>
 
-      <div class="cursor-pointertext-center mt-6">
+      <div class="text-center mt-6">
         <span class="text-xs text-gray-400"
           >Sistema de Gestión Bibliotecaria v1.0</span
         >
@@ -123,6 +123,12 @@ const API_BASE_URL = import.meta.env.PUBLIC_API_BASE_URL;
 
           if (responseData.user) {
             localStorage.setItem("user", JSON.stringify(responseData.user));
+            localStorage.setItem("user_id", responseData.user.id);
+            localStorage.setItem("username", responseData.user.username);
+            
+            if (responseData.user.rol_name) {
+              localStorage.setItem("rol_name", responseData.user.rol_name);
+            }
           }
 
           window.location.replace("/dashboard");
@@ -145,7 +151,7 @@ const API_BASE_URL = import.meta.env.PUBLIC_API_BASE_URL;
         console.error("Error:", error);
         if (errorMessage) {
           errorMessage.textContent =
-            "Error de conexión con el servidor backend (${API_BASE_URL})";
+            `Error de conexión con el servidor backend (${API_BASE_URL})`;
           errorMessage.classList.remove("hidden");
         }
       }
