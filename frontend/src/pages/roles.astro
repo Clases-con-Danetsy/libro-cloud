@@ -100,7 +100,8 @@ const API_BASE_URL = import.meta.env.PUBLIC_API_BASE_URL;
 
 <script type="module" define:vars={{ API_BASE_URL }}>
   console.log(API_BASE_URL);
-  const { loggedUserId, rol_id } = window.Verificacion.getUserData();
+  const loggedUserId = localStorage.getItem("user_id");
+  
   if (localStorage.getItem("isLoggedIn") !== "true") {
     window.location.replace("/");
   }
@@ -120,18 +121,10 @@ const API_BASE_URL = import.meta.env.PUBLIC_API_BASE_URL;
   }
 
   function editRole(id) {
-    if (window.Verificacion.canUpdate(rol_id)) {
-      alert("No tienes permisos para editar roles. Solo usuarios con rol Editor o Admin pueden realizar esta acción.");
-      return;
-    }
     window.location.href = `/roles_update?id=${id}`;
   }
 
   async function activateRole(id) {
-    if (window.Verificacion.canActivate(rol_id)) {
-      alert("No tienes permisos para activar/desactivar roles. Solo usuarios con rol Admin pueden realizar esta acción.");
-      return;
-    }
     if (!loggedUserId) {
       alert("No se pudo obtener el ID del usuario logueado");
       return;
@@ -165,14 +158,9 @@ const API_BASE_URL = import.meta.env.PUBLIC_API_BASE_URL;
   }
 
   function deactivateRole(id) {
-    if (window.Verificacion.canDeactivate(rol_id)) {
-      alert("No tienes permisos para activar/desactivar roles. Solo usuarios con rol Admin pueden realizar esta acción.");
-      return;
-    } else {
-      roleToDeactivate = id;
-      document.getElementById("confirm-modal").classList.remove("hidden");
-      document.getElementById("confirm-modal").classList.add("flex");
-    }
+    roleToDeactivate = id;
+    document.getElementById("confirm-modal").classList.remove("hidden");
+    document.getElementById("confirm-modal").classList.add("flex");
   }
 
   function closeModal() {

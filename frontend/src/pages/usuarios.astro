@@ -15,7 +15,7 @@ const API_BASE_URL = import.meta.env.PUBLIC_API_BASE_URL;
       <main class="flex-1 p-10">
         <div class="max-w-6xl mx-auto">
           <div class="flex justify-end mb-4">
-            <a
+            
               href="/usuarios_create"
               class="cursor-pointer bg-pink-500 text-white px-5 py-2 rounded-full hover:bg-pink-600 transition"
             >
@@ -72,7 +72,7 @@ const API_BASE_URL = import.meta.env.PUBLIC_API_BASE_URL;
 
 <script type="module" define:vars={{ API_BASE_URL }}>
   console.log(API_BASE_URL);
-  const { loggedUserId, rol_id } = window.Verificacion.getUserData();
+  const loggedUserId = localStorage.getItem("user_id");
   
   if (localStorage.getItem("isLoggedIn") !== "true") {
     window.location.replace("/");
@@ -87,19 +87,10 @@ const API_BASE_URL = import.meta.env.PUBLIC_API_BASE_URL;
   }
 
   function editUser(id) {
-    if (window.Verificacion.canUpdate(rol_id)) {
-      alert("No tienes permisos para editar usuarios. Solo usuarios con rol Editor o Admin pueden realizar esta acción.");
-      return;
-    }
     window.location.href = `/usuarios_update?id=${id}`;
   }
 
   async function activateUser(id) {
-    if (window.Verificacion.canActivate(rol_id)) {
-      alert("No tienes permisos para activar/desactivar usuarios. Solo usuarios con rol Admin pueden realizar esta acción.");
-      return;
-    }
-
     if (!loggedUserId) {
       alert("No se pudo obtener el ID del usuario logueado");
       return;
@@ -118,7 +109,6 @@ const API_BASE_URL = import.meta.env.PUBLIC_API_BASE_URL;
 
       if (!response.ok) {
         const errorData = await response.json();
-        // Mostrar el mensaje de error del backend
         alert(errorData.detail || "No tienes permisos para activar usuarios");
         return;
       }
@@ -134,15 +124,10 @@ const API_BASE_URL = import.meta.env.PUBLIC_API_BASE_URL;
   }
 
   function deactivateUser(id) {
-    if (window.Verificacion.canDeactivate(rol_id)) {
-      alert("No tienes permisos para activar/desactivar usuarios. Solo usuarios con rol Admin pueden realizar esta acción.");
-      return;
-    } else {
-      userToDeactivate = id;
-      const modal = document.getElementById("confirm-modal");
-      modal.classList.remove("hidden");
-      modal.classList.add("flex");
-    }
+    userToDeactivate = id;
+    const modal = document.getElementById("confirm-modal");
+    modal.classList.remove("hidden");
+    modal.classList.add("flex");
   }
 
   function closeModal() {
@@ -174,7 +159,6 @@ const API_BASE_URL = import.meta.env.PUBLIC_API_BASE_URL;
 
       if (!response.ok) {
         const errorData = await response.json();
-        // Mostrar el mensaje de error del backend
         alert(errorData.detail || "No tienes permisos para desactivar usuarios");
         closeModal();
         return;

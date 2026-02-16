@@ -72,9 +72,8 @@ const API_BASE_URL = import.meta.env.PUBLIC_API_BASE_URL;  // ✅ AGREGADO
   const usernameInput = document.getElementById("username");
   const rolSelect = document.getElementById("rol");
   const form = document.getElementById("usuario-form");
-  const loggedUserId = localStorage.getItem("user_id");  // ✅ CORREGIDO
+  const loggedUserId = localStorage.getItem("user_id");
 
-  // 🔹 cargar roles
   async function loadRoles(selectedRolId) {
     const res = await fetch(`${API_BASE_URL}/roles`, {
       headers: {
@@ -98,7 +97,6 @@ const API_BASE_URL = import.meta.env.PUBLIC_API_BASE_URL;  // ✅ AGREGADO
     });
   }
 
-  // 🔹 cargar usuario por ID
   async function loadUsuario() {
     const res = await fetch(`${API_BASE_URL}/usuarios/${userId}`, {
       headers: {
@@ -118,7 +116,6 @@ const API_BASE_URL = import.meta.env.PUBLIC_API_BASE_URL;  // ✅ AGREGADO
     await loadRoles(usuario.rol_id);
   }
 
-  // 🔹 enviar actualización
   form.addEventListener("submit", async (e) => {
     e.preventDefault();
 
