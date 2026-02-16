@@ -2,7 +2,7 @@
 import MainLayout from "../layouts/MainLayout.astro";
 import Sidebar from "../components/Sidebar.astro";
 import Menu from "../components/menu.astro";
-const API_BASE_URL = import.meta.env.PUBLIC_API_BASE_URL;  // ✅ AGREGADO
+const API_BASE_URL = import.meta.env.PUBLIC_API_BASE_URL;
 ---
 
 <MainLayout title="Usuarios">
@@ -17,7 +17,7 @@ const API_BASE_URL = import.meta.env.PUBLIC_API_BASE_URL;  // ✅ AGREGADO
           <div class="flex justify-end mb-4">
             
               href="/usuarios_create"
-              class="cursor-pointer bg-pink-500 text-white px-5 py-2 rounded-full hover:bg-pink-600 transition"
+              class="bg-pink-500 text-white px-5 py-2 rounded-full hover:bg-pink-600 transition"
             >
               + Agregar Usuario
             </a>
