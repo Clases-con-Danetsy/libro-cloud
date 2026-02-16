@@ -56,6 +56,13 @@ const API_BASE_URL = import.meta.env.PUBLIC_API_BASE_URL;
     window.location.replace("/");
   }
 
+  // ✅ Validar permisos por rol_name
+  const rol_name = localStorage.getItem("rol_name");
+  if (rol_name === "lector") {
+    alert("No tienes permisos para editar roles. Solo usuarios con rol Editor o Admin pueden realizar esta acción.");
+    window.location.href = "/roles";
+  }
+
   const loggedUserId = localStorage.getItem("user_id");
 
   const params = new URLSearchParams(window.location.search);

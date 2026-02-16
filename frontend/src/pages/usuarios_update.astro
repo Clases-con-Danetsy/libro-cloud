@@ -61,6 +61,17 @@ const API_BASE_URL = import.meta.env.PUBLIC_API_BASE_URL;  // ✅ AGREGADO
 </MainLayout>
 
 <script type="module" define:vars={{ API_BASE_URL }}>
+  if (localStorage.getItem("isLoggedIn") !== "true") {
+    window.location.replace("/");
+  }
+
+  // ✅ Validar permisos por rol_name
+  const rol_name = localStorage.getItem("rol_name");
+  if (rol_name === "lector") {
+    alert("No tienes permisos para editar usuarios. Solo usuarios con rol Editor o Admin pueden realizar esta acción.");
+    window.location.href = "/usuarios";
+  }
+
   const params = new URLSearchParams(window.location.search);
   const userId = params.get("id");
 
@@ -144,10 +155,7 @@ const API_BASE_URL = import.meta.env.PUBLIC_API_BASE_URL;  // ✅ AGREGADO
       } else {
         const errorData = await res.json();
         console.error("Error del servidor:", errorData);
-        alert(
-          "Error al actualizar usuario: " +
-            (errorData.detail || "Error desconocido"),
-        );
+        alert(errorData.detail || "Error al actualizar usuario");
       }
     } catch (error) {
       console.error("Error:", error);
