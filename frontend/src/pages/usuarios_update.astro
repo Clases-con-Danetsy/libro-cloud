@@ -72,12 +72,11 @@ const API_BASE_URL = import.meta.env.PUBLIC_API_BASE_URL;  // ✅ AGREGADO
   const usernameInput = document.getElementById("username");
   const rolSelect = document.getElementById("rol");
   const form = document.getElementById("usuario-form");
-  const usuarioActual = localStorage.getItem("user");
-  const usuarioActualId = JSON.parse(usuarioActual).id;
+  const loggedUserId = localStorage.getItem("user_id");  // ✅ CORREGIDO
 
   // 🔹 cargar roles
   async function loadRoles(selectedRolId) {
-    const res = await fetch(`${API_BASE_URL}/roles`, {  // ✅ CORREGIDO
+    const res = await fetch(`${API_BASE_URL}/roles`, {
       headers: {
         Authorization: `Bearer ${localStorage.getItem("access_token")}`,
       },
@@ -101,7 +100,7 @@ const API_BASE_URL = import.meta.env.PUBLIC_API_BASE_URL;  // ✅ AGREGADO
 
   // 🔹 cargar usuario por ID
   async function loadUsuario() {
-    const res = await fetch(`${API_BASE_URL}/usuarios/${userId}`, {  // ✅ CORREGIDO
+    const res = await fetch(`${API_BASE_URL}/usuarios/${userId}`, {
       headers: {
         Authorization: `Bearer ${localStorage.getItem("access_token")}`,
       },
@@ -123,15 +122,13 @@ const API_BASE_URL = import.meta.env.PUBLIC_API_BASE_URL;  // ✅ AGREGADO
   form.addEventListener("submit", async (e) => {
     e.preventDefault();
 
-    const loggedUserId = localStorage.getItem("user_id");
-
     if (!loggedUserId) {
       alert("No se pudo obtener el ID del usuario logueado");
       return;
     }
 
     try {
-      const res = await fetch(`${API_BASE_URL}/usuarios/${userId}`, {  // ✅ CORREGIDO
+      const res = await fetch(`${API_BASE_URL}/usuarios/${userId}`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
