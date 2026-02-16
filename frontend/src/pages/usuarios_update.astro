@@ -2,6 +2,7 @@
 import MainLayout from "../layouts/MainLayout.astro";
 import Sidebar from "../components/Sidebar.astro";
 import Menu from "../components/menu.astro";
+const API_BASE_URL = import.meta.env.PUBLIC_API_BASE_URL;  // ✅ AGREGADO
 ---
 
 <MainLayout title="Editar Usuario">
@@ -45,7 +46,7 @@ import Menu from "../components/menu.astro";
                 Guardar cambios
               </button>
 
-              <a
+              
                 href="/usuarios"
                 class="px-4 py-2 rounded-md border border-gray-300 hover:bg-gray-100"
               >
@@ -59,7 +60,7 @@ import Menu from "../components/menu.astro";
   </div>
 </MainLayout>
 
-<script is:inline>
+<script type="module" define:vars={{ API_BASE_URL }}>
   const params = new URLSearchParams(window.location.search);
   const userId = params.get("id");
 
@@ -76,7 +77,7 @@ import Menu from "../components/menu.astro";
 
   // 🔹 cargar roles
   async function loadRoles(selectedRolId) {
-    const res = await fetch("http://localhost:8000/roles", {
+    const res = await fetch(`${API_BASE_URL}/roles`, {  // ✅ CORREGIDO
       headers: {
         Authorization: `Bearer ${localStorage.getItem("access_token")}`,
       },
@@ -100,7 +101,7 @@ import Menu from "../components/menu.astro";
 
   // 🔹 cargar usuario por ID
   async function loadUsuario() {
-    const res = await fetch(`http://localhost:8000/usuarios/${userId}`, {
+    const res = await fetch(`${API_BASE_URL}/usuarios/${userId}`, {  // ✅ CORREGIDO
       headers: {
         Authorization: `Bearer ${localStorage.getItem("access_token")}`,
       },
@@ -130,7 +131,7 @@ import Menu from "../components/menu.astro";
     }
 
     try {
-      const res = await fetch(`http://localhost:8000/usuarios/${userId}`, {
+      const res = await fetch(`${API_BASE_URL}/usuarios/${userId}`, {  // ✅ CORREGIDO
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
