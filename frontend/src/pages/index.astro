@@ -1,0 +1,17 @@
+---
+import MainLayout from "../layouts/MainLayout.astro";
+import Login from "../components/Login.astro";
+---
+
+<script>
+  if (localStorage.getItem("isLoggedIn") === "true") {
+    window.location.replace("/dashboard");
+  }
+</script>
+
+<MainLayout title="Inicio">
+  <div class="container mx-auto px-4 h-full flex flex-col justify-center items-center">
+
+    <Login />
+  </div>
+</MainLayout>

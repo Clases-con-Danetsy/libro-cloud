@@ -1,0 +1,240 @@
+from app.core.security import create_access_token
+from app.core.deps import get_current_user
+from app.core.permissions import verificar_permiso  # ✅ NUEVA IMPORTACIÓN
+from fastapi import APIRouter, Depends, Body, HTTPException
+from sqlalchemy.orm import Session
+from app.database import get_db
+from app.repository.usuario import (
+    create_usuario,
+    get_usuario_by_username,
+    update_usuario,
+    delete_usuario,
+    activate_usuario,
+    login_usuario,
+    get_usuario_by_id,
+)
+from app.models import Usuario, Rol
+from app.repository.usuario import get_users_by_ids
+
+router = APIRouter()
+users_router = APIRouter(prefix="/usuarios", tags=["Usuarios"])
+
+
+@users_router.post("/")
+def create_new_user(
+    username: str = Body(...),
+    password: str = Body(...),
+    rol_id: int = Body(...),
+    created_by: int = Body(...),
+    updated_by: int = Body(...),
+    db: Session = Depends(get_db),
+    current_user_id: int = Depends(get_current_user),
+):
+    # ✅ Verificar permiso de CREAR
+    verificar_permiso(db, current_user_id, "crear")
+    
+    existing_user = get_usuario_by_username(db, username=username)
+    if existing_user:
+        raise HTTPException(status_code=400, detail="Username already registered")
+
+    try:
+        usuario = create_usuario(
+            db=db,
+            username=username,
+            password=password,
+            rol_id=rol_id,
+            created_by=created_by,
+            updated_by=updated_by
+        )
+
+        return {
+            "id": usuario.id,
+            "username": usuario.username,
+            "rol_id": usuario.rol_id,
+            "status": usuario.status,
+            "created_at": usuario.created_at,
+            "updated_at": usuario.updated_at,
+            "created_by": usuario.created_by,
+            "updated_by": usuario.updated_by,
+        }
+
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+
+@users_router.get("/")
+def read_users(
+    db: Session = Depends(get_db),
+    current_user_id: int = Depends(get_current_user),
+):
+    # ✅ Verificar permiso de VER (todos pueden ver)
+    verificar_permiso(db, current_user_id, "ver")
+    
+    results = (
+        db.query(
+            Usuario.id,
+            Usuario.username,
+            Usuario.status,
+            Usuario.created_at,
+            Usuario.updated_at,
+            Rol.nombre.label("rol_name"),
+            Usuario.created_by,
+            Usuario.updated_by
+        )
+        .join(Rol)
+        .all()
+    )
+
+    user_ids = set()
+    for r in results:
+        if r.created_by:
+            user_ids.add(r.created_by)
+        if r.updated_by:
+            user_ids.add(r.updated_by)
+
+    users = get_users_by_ids(db, list(user_ids))
+    user_map = {u.id: u.username for u in users}
+
+    return [
+        {
+            "id": r.id,
+            "username": r.username,
+            "rol_name": r.rol_name,
+            "status": r.status,
+            "created_at": r.created_at,
+            "updated_at": r.updated_at,
+            "created_by": user_map.get(r.created_by),
+            "updated_by": user_map.get(r.updated_by),
+        }
+        for r in results
+    ]
+
+
+@users_router.get("/{user_id}")
+def read_user_by_id(
+    user_id: int,
+    db: Session = Depends(get_db),
+    current_user_id: int = Depends(get_current_user),
+):
+    # ✅ Verificar permiso de VER
+    verificar_permiso(db, current_user_id, "ver")
+    
+    user = get_usuario_by_id(db, user_id)
+    if not user:
+        raise HTTPException(status_code=404, detail="Usuario no encontrado")
+    return {
+        "id": user.id,
+        "username": user.username,
+        "rol_id": user.rol_id,
+        "status": user.status,
+        "created_at": user.created_at,
+        "updated_at": user.updated_at,
+    }
+
+
+@users_router.put("/{user_id}")
+def update_existing_user(
+    user_id: int,
+    username: str = Body(None),
+    rol_id: int = Body(None),
+    status: bool = Body(None),
+    updated_by: int = Body(None),
+    db: Session = Depends(get_db),
+    current_user_id: int = Depends(get_current_user),
+):
+    # ✅ Verificar permiso de EDITAR
+    verificar_permiso(db, current_user_id, "editar")
+    
+    try:
+        if updated_by is None:
+            raise HTTPException(
+                status_code=400,
+                detail="updated_by es obligatorio para actualizar el usuario"
+            )
+
+        updated_user = update_usuario(
+            db=db,
+            user_id=user_id,
+            username=username,
+            rol_id=rol_id,
+            status=status,
+            updated_by=updated_by
+        )
+
+        if not updated_user:
+            raise HTTPException(status_code=404, detail="Usuario no encontrado")
+
+        return {
+            "id": updated_user.id,
+            "username": updated_user.username,
+            "rol_id": updated_user.rol_id,
+            "status": updated_user.status,
+            "created_at": updated_user.created_at,
+            "updated_at": updated_user.updated_at,
+            "created_by": updated_user.created_by,
+            "updated_by": updated_user.updated_by,
+        }
+
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+
+@users_router.delete("/{user_id}/{id_user}")
+def delete_user_endpoint(
+    user_id: int,
+    id_user: int,
+    db: Session = Depends(get_db),
+    current_user_id: int = Depends(get_current_user),
+):
+    # ✅ Verificar permiso de ACTIVAR/DESACTIVAR (solo Admin)
+    verificar_permiso(db, current_user_id, "activar_desactivar")
+    
+    deleted_user = delete_usuario(db, user_id, id_user)
+
+    if not deleted_user:
+        raise HTTPException(status_code=404, detail="Usuario no encontrado")
+
+    return {
+        "message": "Usuario desactivado correctamente",
+        "id": deleted_user.id,
+        "status": deleted_user.status,
+    }
+
+
+@users_router.put("/{user_id}/activate/{id_user}")
+def activate_user_endpoint(
+    user_id: int,
+    id_user: int,
+    db: Session = Depends(get_db),
+    current_user_id: int = Depends(get_current_user),
+):
+    # ✅ Verificar permiso de ACTIVAR/DESACTIVAR (solo Admin)
+    verificar_permiso(db, current_user_id, "activar_desactivar")
+    
+    activated_user = activate_usuario(db, user_id, id_user)
+
+    if not activated_user:
+        raise HTTPException(status_code=404, detail="Usuario no encontrado")
+
+    return {
+        "message": "Usuario activado correctamente",
+        "id": activated_user.id,
+        "status": activated_user.status,
+    }
+
+
+@router.post("/login", tags=["Usuarios"])
+def login(
+    username: str = Body(...),
+    password: str = Body(...),
+    db: Session = Depends(get_db)
+):
+    try:
+        user_response = login_usuario(db, username, password)
+        access_token = create_access_token(data={"sub": str(user_response["id"])})
+        return {"message": "Login successful", "user": user_response, "access_token": access_token, "token_type": "bearer"}
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+
+router.include_router(users_router)
